@@ -18,10 +18,6 @@ import {
   Menu,
   X,
   MessageSquareText,
-  Play,
-  Check,
-  Mail,
-  Image as ImageIcon,
 } from "lucide-react";
 import { initialContent, company } from "./content.js";
 import {
@@ -107,6 +103,13 @@ function go(path) {
   else history.pushState({}, "", path);
   dispatchEvent(new Event("popstate"));
 }
+const navigation = [
+  ["partners", "Partners"],
+  ["ongoing-works", "Ongoing Works"],
+  ["completed-works", "Completed Works"],
+  ["contact", "Contact"],
+];
+
 function Hero({ c, consult, section }) {
   const [slide, setSlide] = useState(0),
     [menu, setMenu] = useState(false);
@@ -147,13 +150,7 @@ function Hero({ c, consult, section }) {
           <Wordmark />
         </a>
         <nav aria-label="Main navigation">
-          {[
-            ["work", "Selected work"],
-            ["partners", "Partners"],
-            ["studio", "The studio"],
-            ["films", "Client films"],
-            ["contact", "Contact"],
-          ].map(([id, label]) => (
+          {navigation.map(([id, label]) => (
             <a
               key={id}
               href={"#" + id}
@@ -167,7 +164,7 @@ function Hero({ c, consult, section }) {
           ))}
         </nav>
         <button className="outline-light enquire" onClick={consult}>
-          Enquire
+          Book consultation
         </button>
         <button
           aria-label={menu ? "Close menu" : "Open menu"}
@@ -179,13 +176,7 @@ function Hero({ c, consult, section }) {
         </button>
         {menu && (
           <div className="mobile-nav">
-            {[
-              ["work", "Selected work"],
-              ["partners", "Partners"],
-              ["studio", "The studio"],
-              ["films", "Client films"],
-              ["contact", "Contact"],
-            ].map(([k, v]) => (
+            {navigation.map(([k, v]) => (
               <button key={k} onClick={() => jump(k)}>
                 {v}
               </button>
@@ -196,7 +187,7 @@ function Hero({ c, consult, section }) {
                 consult();
               }}
             >
-              Book a consultation
+              Book consultation
             </button>
           </div>
         )}
@@ -217,12 +208,12 @@ function Hero({ c, consult, section }) {
           )}
         </h1>
         <button className="hero-cta" onClick={consult}>
-          Book free consultation
+          Book consultation
           <ArrowUpRight size={17} />
         </button>
       </div>
       <div className="hero-baseline">
-        <button className="scroll-cue" onClick={() => jump("work")}>
+        <button className="scroll-cue" onClick={() => jump("ongoing-works")}>
           <ArrowDown size={16} /> Explore the work
         </button>
         <div className="slide-control" aria-label="Featured images">
@@ -294,12 +285,12 @@ function ProjectCard({ p, count, liked, onLike, share, open }) {
     </article>
   );
 }
-function Invitation({ consult, alt }) {
+function Invitation({ consult }) {
   return (
-    <aside className={"invitation " + (alt ? "inv-alt" : "")}>
-      <h3>{alt ? "What are you imagining?" : "A space of your own."}</h3>
+    <aside className="invitation">
+      <h3>A space of your own.</h3>
       <button onClick={consult}>
-        Book a free design consultation <ArrowUpRight size={16} />
+        Book consultation <ArrowUpRight size={16} />
       </button>
     </aside>
   );
@@ -326,84 +317,34 @@ function Masonry({ items, card }) {
     </div>
   );
 }
-function Studio({ c, consult }) {
+function WorkSection({ status, projects, card }) {
+  const gallery = projects.filter((p) => p.workStatus === status);
+  const examples =
+    gallery.length > 0 && gallery.every((p) => /\bconcept\b/i.test(p.type));
+  const id = status.toLowerCase() + "-works";
   return (
-    <section id="studio" className="studio">
-      <div className="studio-img">
-        <img
-          src={asset(c.studioImage)}
-          alt="A close study of interior materials and furnishings"
-          loading="lazy"
-        />
-      </div>
-      <div className="studio-text">
-        <div className="kicker">
-          <i /> The studio
-        </div>
-        <h2>
-          Designed around
-          <br />
-          <em>real life.</em>
-        </h2>
-        <p>{c.subtitle}</p>
-        <p>
-          Discrete Art Studio LLP is led by founder Srikanth Potekulla. Our
-          starting point is a conversation about how a room will be used, who
-          gathers there, and what deserves a place in it.
-        </p>
-        <button className="text-link" onClick={consult}>
-          Talk to the studio <ArrowUpRight size={15} />
-        </button>
-      </div>
-    </section>
-  );
-}
-function Films({ c, open }) {
-  return (
-    <section id="films" className="films page-pad">
+    <section
+      id={id}
+      aria-labelledby={id + "-heading"}
+      className="work page-pad"
+    >
       <div className="section-top">
-        <div>
-          <div className="kicker">
-            <i /> In conversation
-          </div>
-          <h2>
-            Client <em>films.</em>
-          </h2>
-        </div>
-        <p>
-          {c.films.some((f) => f.sample)
-            ? "Portrait previews from our client film series. Illustrative stills are labelled below."
-            : "Conversations with the people who live in the spaces."}
+        <h2 id={id + "-heading"}>
+          {status} <em>Works</em>
+        </h2>
+        {examples && <p>Concept galleries illustrating this section.</p>}
+      </div>
+      {gallery.length ? (
+        <Masonry items={gallery} card={card} />
+      ) : (
+        <p className="work-empty">
+          No {status.toLowerCase()} projects are featured yet.
         </p>
-      </div>
-      <div className="film-grid">
-        {c.films.map((f) => (
-          <button className="film" key={f.id} onClick={() => open(f)}>
-            <img
-              src={asset(f.poster)}
-              alt={f.sample ? "Illustrative portrait in an interior" : f.title}
-              loading="lazy"
-            />
-            <span className="film-shade" />
-            <span className="film-open">
-              {f.video ? <Play size={20} /> : <ImageIcon size={20} />}
-            </span>
-            <span className="film-caption">
-              <small>
-                {f.sample
-                  ? "Illustrative still"
-                  : f.video
-                    ? "Client film"
-                    : "Client portrait"}
-              </small>
-              <strong>{f.quote ? "“" + f.quote + "”" : f.title}</strong>
-            </span>
-          </button>
-        ))}
-      </div>
+      )}
     </section>
   );
 }
+
 function Brands() {
   const [items, setItems] = useState([]);
   useEffect(() => {
@@ -474,7 +415,7 @@ function Legal({ page, c, consult, preferences }) {
           </p>
         )}
         <button className="solid" onClick={consult}>
-          Book free consultation
+          Book consultation
         </button>
       </>
     );
@@ -557,7 +498,6 @@ export function Website() {
     [overlay, setOverlay] = useState(""),
     [enquiryKind, setEnquiryKind] = useState("project"),
     [notice, setNotice] = useState(""),
-    [film, setFilm] = useState(null),
     [shareInfo, setShareInfo] = useState(null),
     [tracking, setTracking] = useState(consent),
     [counts, setCounts] = useState({}),
@@ -608,7 +548,6 @@ export function Website() {
   }
   const consult = () => {
     if (path !== "/") go("/");
-    setFilm(null);
     setOverlay("consult");
   };
   function section(id) {
@@ -669,7 +608,7 @@ export function Website() {
     );
   }
   function contact(kind) {
-    if (kind === "Consult") return consult();
+    if (kind === "Book consultation") return consult();
     const number = kind === "Call" ? c.phone : c.whatsapp || c.phone;
     if (number) {
       if (kind === "Call") location.href = "tel:" + number;
@@ -688,8 +627,8 @@ export function Website() {
   const closePage = () => go("/");
   return (
     <>
-      <a className="skip" href="#work">
-        Skip to selected work
+      <a className="skip" href="#ongoing-works">
+        Skip to ongoing works
       </a>
       <Hero c={c} consult={consult} section={section} />
       <main>
@@ -701,34 +640,9 @@ export function Website() {
             section("contact");
           }}
         />
-        <section id="work" className="work page-pad">
-          <div className="section-top">
-            <div>
-              <div className="kicker">
-                <i /> The portfolio
-              </div>
-              <h2>
-                Selected <em>spaces.</em>
-              </h2>
-            </div>
-            <p>
-              A gallery of residential and commercial design studies. Open a
-              space to explore its materials and details.
-            </p>
-          </div>
-          <Masonry items={c.projects.slice(0, 4)} card={card} />
-        </section>
+        <WorkSection status="Ongoing" projects={c.projects} card={card} />
         <Invitation consult={consult} />
-        {c.projects.length > 4 && (
-          <section
-            className="work-tail page-pad"
-            aria-label="More design studies"
-          >
-            <Masonry items={c.projects.slice(4)} card={card} />
-          </section>
-        )}
-        <Studio c={c} consult={consult} />
-        {c.films.length > 0 && <Films c={c} open={setFilm} />}
+        <WorkSection status="Completed" projects={c.projects} card={card} />
         <Brands />
         <ContactSection c={c} kind={enquiryKind} setKind={setEnquiryKind} />
       </main>
@@ -755,7 +669,7 @@ export function Website() {
       </footer>
       <nav className="dock" aria-label="Contact the studio">
         {[
-          [MessageSquareText, "Consult"],
+          [MessageSquareText, "Book consultation"],
           [MessageCircle, "WhatsApp"],
           [Phone, "Call"],
         ].map(([Icon, s]) => (
@@ -802,7 +716,7 @@ export function Website() {
               </figure>
             ))}
             <button className="solid" onClick={consult}>
-              Discuss a similar space <ArrowUpRight size={15} />
+              Book consultation <ArrowUpRight size={15} />
             </button>
           </div>
         </Dialog>
@@ -821,41 +735,6 @@ export function Website() {
           </button>
         </Dialog>
       )}
-      {film && (
-        <Dialog
-          label={film.title}
-          onClose={() => setFilm(null)}
-          kind="film-player"
-        >
-          {film.video ? (
-            <video
-              poster={asset(film.poster)}
-              src={asset(film.video)}
-              controls
-              autoPlay
-              playsInline
-            />
-          ) : (
-            <img
-              src={asset(film.poster)}
-              alt={"Illustrative portrait for " + film.title}
-            />
-          )}
-          <div>
-            <small>
-              {film.sample
-                ? "Illustrative portrait · Film preview"
-                : film.video
-                  ? "Client film"
-                  : "Client portrait"}
-            </small>
-            <h3>{film.title}</h3>
-            {!film.video && (
-              <p>Photography preview. A film has yet to be added.</p>
-            )}
-          </div>
-        </Dialog>
-      )}
       {overlay === "consult" && (
         <Consult email={c.email} onClose={() => setOverlay("")} />
       )}
@@ -871,7 +750,7 @@ export function Website() {
             your project details.
           </p>
           <button className="solid" onClick={consult}>
-            Open consultation form
+            Book consultation
           </button>
         </Dialog>
       )}

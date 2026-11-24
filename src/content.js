@@ -1,6 +1,7 @@
 export const company = "Discrete Art Studio LLP";
 export const cities = ["Bangalore", "Hyderabad"];
 export const sectors = ["Residential", "Commercial"];
+export const workStatuses = ["Unassigned", "Ongoing", "Completed"];
 export const partnerFocus = [...sectors, "Residential and commercial"];
 export const studioLocations = {
   Bangalore: "Karnataka",
@@ -8,8 +9,6 @@ export const studioLocations = {
 };
 export const initialContent = {
   headline: "The art of\nliving well.",
-  subtitle:
-    "Residential and commercial interiors, shaped around the people who use them.",
   hero: [
     { image: "/media/hero.webp", label: "Courtyard House" },
     { image: "/media/dining.webp", label: "The Walnut Dining Room" },
@@ -19,6 +18,7 @@ export const initialContent = {
   projects: [
     {
       id: "courtyard-house",
+      workStatus: "Ongoing",
       name: "Courtyard House",
       type: "Residential concept",
       sector: "Residential",
@@ -39,6 +39,7 @@ export const initialContent = {
     },
     {
       id: "terracotta-cafe",
+      workStatus: "Completed",
       name: "The Terracotta Café",
       type: "Hospitality concept",
       sector: "Commercial",
@@ -57,6 +58,7 @@ export const initialContent = {
     },
     {
       id: "oak-kitchen",
+      workStatus: "Ongoing",
       name: "Oak & Travertine",
       type: "Kitchen concept",
       sector: "Residential",
@@ -77,6 +79,7 @@ export const initialContent = {
     },
     {
       id: "olive-room",
+      workStatus: "Completed",
       name: "The Olive Room",
       type: "Bedroom concept",
       sector: "Residential",
@@ -94,6 +97,7 @@ export const initialContent = {
     },
     {
       id: "limestone-atelier",
+      workStatus: "Ongoing",
       name: "The Limestone Atelier",
       type: "Retail concept",
       sector: "Commercial",
@@ -114,6 +118,7 @@ export const initialContent = {
     },
     {
       id: "walnut-table",
+      workStatus: "Completed",
       name: "The Walnut Dining Room",
       type: "Dining concept",
       sector: "Residential",
@@ -133,25 +138,6 @@ export const initialContent = {
       ],
     },
   ],
-  films: [
-    {
-      id: "at-home",
-      title: "At home, in conversation",
-      poster: "/stories/portrait-one.webp",
-      video: "",
-      quote: "",
-      sample: true,
-    },
-    {
-      id: "everyday",
-      title: "The everyday details",
-      poster: "/stories/portrait-two.webp",
-      video: "",
-      quote: "",
-      sample: true,
-    },
-  ],
-  studioImage: "/media/studio.webp",
   city: "",
   address: "",
   bangaloreAddress:
@@ -189,6 +175,7 @@ export function withPortfolioDefaults(saved) {
         ? "Commercial"
         : "Residential",
       partnerIds: [],
+      workStatus: "Unassigned",
       ...p,
     })),
   };

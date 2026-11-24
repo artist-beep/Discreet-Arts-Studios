@@ -2,6 +2,13 @@
 import { readFileSync, writeFileSync, readdirSync, mkdirSync } from "node:fs";
 import { resolve, extname, dirname } from "node:path";
 import "./preview-shell.mjs";
+import { initialContent } from "../src/content.js";
+const previewImages = new Set([
+  ...initialContent.hero.map((slide) => slide.image),
+  ...initialContent.projects.flatMap((project) =>
+    project.images.map((image) => image.url),
+  ),
+]);
 const root = resolve("dist"),
   assets = {};
 const mime = {
@@ -23,7 +30,7 @@ for (const dir of ["media", "stories", "brands", "fonts"]) {
   }
   for (const name of files) {
     const type = mime[extname(name)];
-    if (type)
+    if (type && (dir === "fonts" || previewImages.has("/" + dir + "/" + name)))
       assets["/" + dir + "/" + name] =
         "data:" +
         type +

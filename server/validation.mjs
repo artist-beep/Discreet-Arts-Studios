@@ -3,6 +3,7 @@ import {
   scopes,
   cities,
   sectors,
+  workStatuses,
   partnerFocus,
   withPortfolioDefaults,
 } from "../src/content.js";
@@ -166,7 +167,6 @@ export function validateContent(c, previous) {
   const output = {};
   for (const [k, n] of Object.entries({
     headline: 110,
-    subtitle: 240,
     city: 120,
     address: 400,
     email: 254,
@@ -178,7 +178,7 @@ export function validateContent(c, previous) {
     instagram: 2048,
     facebook: 2048,
   }))
-    output[k] = field(c[k] ?? "", n, k, ["headline", "subtitle"].includes(k));
+    output[k] = field(c[k] ?? "", n, k, k === "headline");
   requireThat(
     !output.email || emailOk(output.email),
     "Check the public email.",
@@ -242,17 +242,25 @@ export function validateContent(c, previous) {
     image: image(s.image),
     label: field(s.label, 100, "slide label", true),
   }));
-  output.studioImage = image(c.studioImage);
+  // Older CMS records may still contain content for previously displayed sections.
+  if (c.subtitle !== undefined)
+    output.subtitle = field(c.subtitle, 240, "studio introduction");
+  if (c.studioImage !== undefined) output.studioImage = image(c.studioImage);
   output.projects = list(c.projects, 1, 60).map((p) => {
     requireThat(
       sectors.includes(p.sector),
       "Select residential or commercial.",
+    );
+    requireThat(
+      workStatuses.includes(p.workStatus),
+      "Choose a valid project status.",
     );
     return {
       id: slug(p.id),
       name: field(p.name, 100, "project name", true),
       type: field(p.type, 100, "project type", true),
       sector: p.sector,
+      workStatus: p.workStatus,
       partnerIds: [
         ...new Set(
           list(p.partnerIds, 0, 60).map((id) => {
@@ -271,15 +279,16 @@ export function validateContent(c, previous) {
       })),
     };
   });
-  output.films = list(c.films, 0, 20).map((f) => ({
-    id: slug(f.id),
-    title: field(f.title, 120, "film title", true),
-    poster: image(f.poster),
-    video: f.video ? image(f.video) : "",
-    quote: field(f.quote ?? "", 400, "quote"),
-    sample: f.sample === true,
-  }));
-  for (const a of [output.projects, output.films])
+  if (c.films !== undefined)
+    output.films = list(c.films, 0, 20).map((f) => ({
+      id: slug(f.id),
+      title: field(f.title, 120, "film title", true),
+      poster: image(f.poster),
+      video: f.video ? image(f.video) : "",
+      quote: field(f.quote ?? "", 400, "quote"),
+      sample: f.sample === true,
+    }));
+  for (const a of [output.projects, output.films || []])
     requireThat(
       new Set(a.map((x) => x.id)).size === a.length,
       "Each album or film needs its own ID.",

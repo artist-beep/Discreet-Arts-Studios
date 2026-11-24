@@ -390,8 +390,7 @@ em {
   gap: 2rem;
   margin-bottom: clamp(2.4rem, 4.8vw, 4.8rem);
 }
-.section-top h2,
-.studio h2 {
+.section-top h2 {
   font-size: clamp(3.6rem, 5.8vw, 7rem);
   letter-spacing: -0.054em;
   line-height: 1.05;
@@ -494,37 +493,6 @@ em {
   padding: 8px 0;
   gap: 12px;
 }
-.inv-alt {
-  background: #e9e2d4;
-  color: #352b21;
-  margin: 0;
-}
-.inv-alt button {
-  border-color: #7b6855;
-}
-.work-tail {
-  padding-block: 1rem 2rem;
-}
-.studio {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  background: #e8e5da;
-}
-.studio-img {
-  overflow: hidden;
-  min-height: 460px;
-}
-.studio-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  max-height: 800px;
-}
-.studio-text {
-  align-self: center;
-  padding: clamp(2.3rem, 5.5vw, 6rem);
-}
-.studio-text p,
 .legal p,
 .sheet > p,
 .success p {
@@ -533,9 +501,6 @@ em {
   color: var(--muted);
   margin: 16px 0;
 }
-.studio-text .text-link {
-  margin-top: 10px;
-}
 .text-link {
   position: relative;
   justify-content: flex-start;
@@ -543,66 +508,6 @@ em {
   font-size: 0.9rem;
   padding: 7px 0;
   gap: 10px;
-}
-.films {
-  padding-block: clamp(4rem, 7vw, 8rem);
-}
-.film-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(20px, 3vw, 55px);
-  max-width: 860px;
-  margin: auto;
-}
-.film {
-  position: relative;
-  overflow: hidden;
-  aspect-ratio: 9/16;
-  text-align: left;
-  color: white;
-  background: #aaa18e;
-}
-.film img,
-.film-shade {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.film-shade {
-  background: linear-gradient(0deg, #1b170fe0, transparent 45%);
-}
-.film-open {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  border: 1px solid #fff9;
-  border-radius: 50%;
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  background: #25251f55;
-}
-.film-caption {
-  position: absolute;
-  bottom: clamp(1.1rem, 2.4vw, 2.6rem);
-  left: clamp(1.1rem, 2.4vw, 2.6rem);
-  right: 1rem;
-}
-.film-caption small,
-.film-player small {
-  display: block;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  margin-bottom: 8px;
-}
-.film-caption strong {
-  display: block;
-  font: 400 clamp(1.55rem, 3vw, 3.35rem)/1.1 var(--serif);
-  letter-spacing: -0.04em;
 }
 .brands {
   padding: 2rem var(--pad);
@@ -865,39 +770,6 @@ textarea {
   font-size: 0.84rem;
   margin: 6px 0;
 }
-.film-player {
-  padding: 0;
-  background: #24241e;
-  color: white;
-  width: min(100vw, 57svh);
-  max-height: 99svh;
-}
-.film-player .close-btn {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  float: none;
-  color: var(--ink);
-  margin: 0;
-}
-.film-player > img,
-.film-player video {
-  width: 100%;
-  max-height: 78svh;
-  object-fit: contain;
-}
-.film-player > div {
-  padding: 14px 20px;
-}
-.film-player h3 {
-  font-size: 1.75rem;
-  line-height: 1.1;
-}
-.film-player p {
-  font-size: 0.8rem;
-  color: #e0dbcc;
-  margin-top: 5px;
-}
 .legal h3 {
   font-size: 1.6rem;
   margin-top: 24px;
@@ -1054,9 +926,6 @@ textarea {
   .dock {
     bottom: 12px;
   }
-  .studio-text {
-    padding: 2.5rem;
-  }
   .project-actions {
     gap: 0;
   }
@@ -1181,40 +1050,13 @@ textarea {
     max-width: 390px;
     font-size: 0.94rem;
   }
-  .section-top h2,
-  .studio h2 {
+  .section-top h2 {
     font-size: clamp(3.4rem, 10vw, 4.6rem);
-  }
-  .studio {
-    grid-template-columns: 1fr;
-  }
-  .studio-img {
-    min-height: 0;
-    aspect-ratio: 5/4;
-  }
-  .studio-text {
-    padding: 2.6rem var(--pad) 3.4rem;
   }
   .invitation {
     align-items: flex-start;
     flex-direction: column;
     padding-block: 2rem;
-  }
-  .film-grid {
-    gap: 12px;
-  }
-  .film-caption small {
-    font-size: 0.59rem;
-    letter-spacing: 0.08em;
-  }
-  .film-open {
-    top: 10px;
-    right: 10px;
-    width: 30px;
-    height: 30px;
-  }
-  .film-open svg {
-    width: 15px;
   }
   .brands {
     display: block;
@@ -1266,9 +1108,6 @@ textarea {
     min-height: 40px;
     padding-inline: 7px;
   }
-  .work-tail {
-    padding-bottom: 1rem;
-  }
   .sheet {
     width: calc(100vw - 22px);
     max-height: 93svh;
@@ -1292,17 +1131,11 @@ textarea {
   .hero .slide-index {
     margin-right: 3px;
   }
-  .film-player {
-    width: min(100vw, 57svh);
-  }
   footer {
     gap: 1.4rem;
   }
   .brands .brand-track img {
     max-width: 100px;
-  }
-  .films {
-    padding-block: 3.5rem;
   }
 }
 @media (max-width: 380px) {
@@ -1323,13 +1156,6 @@ textarea {
   }
   .sheet {
     padding: 1.15rem;
-  }
-  .film-caption {
-    left: 12px;
-    bottom: 14px;
-  }
-  .film-caption strong {
-    font-size: 1.23rem;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1580,5 +1406,20 @@ textarea {
     align-items: flex-start;
     flex-direction: column;
     gap: 0.65rem;
+  }
+}
+
+.work-empty {
+  color: var(--muted);
+  padding-bottom: clamp(2rem, 5vw, 5rem);
+}
+@media (max-width: 380px) {
+  .dock button {
+    padding-inline: 9px;
+    gap: 5px;
+  }
+  .mast .enquire {
+    padding-inline: 9px;
+    font-size: 0.78rem;
   }
 }

@@ -1,6 +1,6 @@
 # Discrete Art Studio LLP
 
-A local-first build of the studio portfolio. Six residential, hospitality and retail concept albums, a three-image hero, a studio profile, client-film previews, contact controls and a private enquiry dashboard. Project images and the two illustrative portraits were generated for this preview. The portraits are placeholders for approved client films. Fonts use the device’s serif and sans-serif families. The full website loads manufacturer marks from official vendor sources when available. The standalone offline preview omits the brand marquee. Hettich logo discovery and live brand rendering need verification on a networked preview. The site makes no claims that they depict customers.
+A local-first build of the studio portfolio. Six residential, hospitality and retail concept albums, a three-image hero, Ongoing Works and Completed Works galleries, partner portfolios, contact forms and a private enquiry dashboard. Project images are concept illustrations. The starting galleries illustrate both project stages. Fonts use the device’s serif and sans-serif families. The full website loads manufacturer marks from official vendor sources when available. The standalone offline preview omits the brand marquee. Hettich logo discovery and live brand rendering need verification on a networked preview.
 
 ## Open the website
 
@@ -12,7 +12,7 @@ A local-first build of the studio portfolio. Six residential, hospitality and re
 
 ## Partners, locations and contacts
 
-The Partners section groups credited projects by practice and by residential or commercial work. In **Website content → Partners and project credits**, add the approved partner name and introduction. Under **Project galleries**, choose the category and check the partners for each gallery. Until credits are supplied, the preview labels the existing galleries as concepts. Partner enquiries stay private and do not create public profiles automatically.
+The Partners section groups credited projects by practice and by residential or commercial work. In **Website content → Partners and project credits**, add the approved partner name and introduction. Under **Project galleries**, choose Residential or Commercial, assign the project status, and check the partners for each gallery. Choosing Ongoing or Completed places it in the corresponding homepage section. Older or newly created galleries start as Unassigned until the owner chooses a status. Until credits are supplied, the preview labels the existing galleries as concepts. Partner enquiries stay private and do not create public profiles automatically.
 
 The contact area lists Bangalore and Hyderabad. Bangalore uses the Rajajinagar studio address. Hyderabad opens a city-level map until its studio address is entered. Both locations and the social profile URLs can be edited in **Business details and tracking**. The public email and Bangalore address come from the studio contact page at https://discreteartstudios.in/contact. The Instagram and Facebook URLs are taken from the studio footer at https://www.diastudios.in/.
 
@@ -20,7 +20,7 @@ The contact area lists Bangalore and Hyderabad. Bangalore uses the Rajajinagar s
 
 The private route is /admin. Until the confirmed owner email is available and a valid private link is issued, setup stays locked. With the local website running, an authorised operator on the same computer can set STUDIO_OWNER_EMAIL to the confirmed email and run `npm run admin:setup`. A private, expiring setup page opens in a browser. It never prints a token or password. Local recovery uses `npm run admin:recovery` with the same owner identity. These commands operate only on the local database and are unsuitable for remote production recovery.
 
-The owner can review enquiries, mark follow-up status, export CSV, change a password and edit hero slides, gallery content, films, business contact details or the optional Pixel ID. Update the public contact numbers before enabling the call and WhatsApp destinations. Number strings require an international country code.
+The owner can review enquiries, mark follow-up status, export CSV, change a password and edit hero slides, gallery content, project status, business contact details or the optional Pixel ID. Update the public contact numbers before enabling the call and WhatsApp destinations. Number strings require an international country code.
 
 ## Current boundary
 
@@ -28,6 +28,6 @@ The Node preview implements durable SQLite storage for enquiries, likes and CMS 
 
 ## Before production
 
-Confirm the owner email, registered address, city, business contact details, approved project photography and client films. Confirm any brand asset permissions. Review the public terms and privacy copy. Connect the private GitHub repository and Cloudflare account, configure D1 and secrets, and test in Workers. Add and verify the Grid delivery queue, retries and company mapping using the separately provided integration brief. Verify the real Pixel in Meta Test Events if configured. Obtain approval for end-to-end preview QA and production deployment.
+Confirm the owner email, registered address, city, business contact details, approved project photography and project statuses. Confirm any brand asset permissions. Review the public terms and privacy copy. Connect the private GitHub repository and Cloudflare account, configure D1 and secrets, and test in Workers. Add and verify the Grid delivery queue, retries and company mapping using the separately provided integration brief. Verify the real Pixel in Meta Test Events if configured. Obtain approval for end-to-end preview QA and production deployment.
 
 The automated local suite exercises enquiry validation and durable storage, exact anti-spam timing boundaries, immutable retry classification, authenticated CRM/CSV, shared gallery likes, CMS persistence, one-time setup, rate limits, password changes and local recovery. Production D1, Grid, real Meta events, a cloud preview and final owner-approved user QA belong to the deployment phase.

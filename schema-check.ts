@@ -6,21 +6,13 @@ type Project = {
   type: string;
   aspect: string;
   sector: string;
+  workStatus: string;
   partnerIds: string[];
   description: string;
   images: { url: string; alt: string }[];
 };
-type Film = {
-  id: string;
-  title: string;
-  poster: string;
-  video: string;
-  quote: string;
-  sample: boolean;
-};
 type Content = {
   headline: string;
-  subtitle: string;
   hero: { image: string; label: string }[];
   projects: Project[];
   partners: { id: string; name: string; role: string; bio: string }[];
@@ -28,8 +20,6 @@ type Content = {
   instagram: string;
   bangaloreAddress: string;
   hyderabadAddress: string;
-  films: Film[];
-  studioImage: string;
   city: string;
   address: string;
   email: string;

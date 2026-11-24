@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Sun, Moon, LogOut, Download, Plus, Trash2 } from "lucide-react";
-import { sectors } from "./content.js";
+import { sectors, workStatuses } from "./content.js";
 import { api, getPrefs, setPrefs } from "./client.js";
 function Field({ label, value, change, area = false, ...props }) {
   return (
@@ -98,15 +98,13 @@ function Editor({ onNotice }) {
     <form className="studio-form editor" onSubmit={save}>
       <h2>Website content</h2>
       <details open>
-        <summary>Hero and studio</summary>
+        <summary>Homepage hero</summary>
         {input(
           "Hero headline · line break for italic text",
           ["headline"],
           data.headline,
           true,
         )}
-        {input("Studio introduction", ["subtitle"], data.subtitle, true)}
-        {input("Studio image URL", ["studioImage"], data.studioImage)}
         {data.hero.map((h, i) => (
           <fieldset key={i}>
             <legend>Hero slide {i + 1}</legend>
@@ -158,6 +156,19 @@ function Editor({ onNotice }) {
             <summary>{p.name || "New project"}</summary>
             {input("Gallery ID", ["projects", i, "id"], p.id)}
             {input("Project name", ["projects", i, "name"], p.name)}
+            <label>
+              Project status
+              <select
+                value={p.workStatus}
+                onChange={(e) =>
+                  set(["projects", i, "workStatus"], e.target.value)
+                }
+              >
+                {workStatuses.map((status) => (
+                  <option key={status}>{status}</option>
+                ))}
+              </select>
+            </label>
             <label>
               Portfolio category
               <select
@@ -235,6 +246,7 @@ function Editor({ onNotice }) {
             add(["projects"], data.projects, {
               id: "gallery-" + crypto.randomUUID().slice(0, 8),
               name: "New gallery",
+              workStatus: "Unassigned",
               type: "Residential",
               sector: "Residential",
               partnerIds: [],
@@ -243,41 +255,6 @@ function Editor({ onNotice }) {
               images: [{ url: "", alt: "" }],
             }),
           "Add gallery",
-        )}
-      </details>
-      <details>
-        <summary>Client films</summary>
-        {data.films.map((f, i) => (
-          <fieldset key={i}>
-            <legend>{f.title || "New film"}</legend>
-            {[
-              ["Title", "title"],
-              ["Poster URL", "poster"],
-              ["Video URL (optional)", "video"],
-              ["Approved client quote", "quote"],
-            ].map(([l, k]) => input(l, ["films", i, k], f[k]))}
-            <label className="inline-check">
-              <input
-                type="checkbox"
-                checked={f.sample}
-                onChange={(e) => set(["films", i, "sample"], e.target.checked)}
-              />
-              Label as an illustrative preview
-            </label>
-            {minus(() => remove(["films"], data.films, i), "Remove film")}
-          </fieldset>
-        ))}
-        {more(
-          () =>
-            add(["films"], data.films, {
-              id: "film-" + crypto.randomUUID().slice(0, 8),
-              title: "",
-              poster: "",
-              video: "",
-              quote: "",
-              sample: true,
-            }),
-          "Add film",
         )}
       </details>
       <details>

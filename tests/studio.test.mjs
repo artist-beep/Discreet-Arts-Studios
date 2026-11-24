@@ -384,3 +384,62 @@ test("partner form and city-specific project form reach the CRM and CSV with the
     db.close();
   }
 });
+
+test("work status controls gallery membership and older projects await assignment", async () => {
+  const { db, t, req } = harness();
+  try {
+    const legacy = structuredClone(initialContent);
+    delete legacy.projects[0].workStatus;
+    legacy.films = [
+      {
+        id: "archived-portrait",
+        title: "Archived portrait",
+        poster: "/stories/portrait-one.webp",
+        video: "",
+        quote: "",
+        sample: true,
+      },
+    ];
+    legacy.studioImage = "/media/studio.webp";
+    db.run(
+      "INSERT INTO content(id,body,revision) VALUES(1,?,1)",
+      JSON.stringify(legacy),
+    );
+    const ticket = await issueTicket(db, email, "setup", t.now);
+    await req("admin/activate", { token: ticket, password: pass });
+    const session = (
+      await req("admin/login", { email, password: pass })
+    ).headers
+      .get("Set-Cookie")
+      .split(";")[0];
+    let { content, revision } = await (
+      await req("admin/content", undefined, session)
+    ).json();
+    const project = content.projects[0];
+    assert.equal(project.workStatus, "Unassigned");
+    for (const status of ["Ongoing", "Completed"]) {
+      project.workStatus = status;
+      const r = await req("admin/content", { content, revision }, session);
+      assert.equal(r.status, 200);
+      revision = (await r.json()).revision;
+      const pub = await (await req("content")).json();
+      assert.deepEqual(
+        pub.projects
+          .filter((p) => p.id === project.id)
+          .map((p) => p.workStatus),
+        [status],
+      );
+      assert.equal(pub.films, undefined);
+      assert.equal(pub.studioImage, undefined);
+    }
+    project.workStatus = "typo";
+    assert.equal(
+      (await req("admin/content", { content, revision }, session)).status,
+      400,
+    );
+    const final = await (await req("admin/content", undefined, session)).json();
+    assert.deepEqual(final.content.films, legacy.films);
+  } finally {
+    db.close();
+  }
+});

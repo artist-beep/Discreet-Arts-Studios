@@ -316,11 +316,7 @@ export function EnquiryForm({
 }
 export function Consult({ onClose, email }) {
   return (
-    <Dialog
-      label="Book a free consultation"
-      onClose={onClose}
-      kind="consult-dialog"
-    >
+    <Dialog label="Book consultation" onClose={onClose} kind="consult-dialog">
       <div className="kicker">
         <i />
         Studio enquiries

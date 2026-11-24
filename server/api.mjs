@@ -109,7 +109,8 @@ export async function handle(request, { db, secret, clock = Date.now }) {
       return json(await brandImages());
     if (path === "/api/content" && method === "GET") {
       const { content } = await currentContent(db);
-      return json(content);
+      const { films, studioImage, subtitle, ...publicContent } = content;
+      return json(publicContent);
     }
     if (path === "/api/stamp" && method === "GET")
       return json({
