@@ -1485,3 +1485,305 @@ textarea {
     font-size: 0.78rem;
   }
 }
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.5rem;
+}
+.hero-project-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #ffffff94;
+  color: white;
+  font-size: 0.9rem;
+}
+.hero-project-link:hover {
+  border-color: var(--accent);
+}
+.hero-thumbs {
+  display: flex;
+  gap: 5px;
+  max-width: min(23vw, 260px);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.hero-thumbs button,
+.hero-thumbs button + button {
+  flex: none;
+  width: 48px;
+  height: 33px;
+  padding: 2px;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 0;
+  border: 1px solid transparent;
+  opacity: 0.7;
+}
+.hero-thumbs button[aria-pressed="true"] {
+  border-color: var(--accent);
+  opacity: 1;
+}
+.hero-thumbs img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.project-photo {
+  position: relative;
+}
+.project-open {
+  position: absolute;
+  right: 0.8rem;
+  bottom: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.8rem;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.8rem;
+}
+@media (hover: hover) {
+  .project-open {
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 0.2s,
+      transform 0.2s;
+  }
+  .project-photo:is(:hover, :focus-visible) .project-open {
+    opacity: 1;
+    transform: none;
+  }
+}
+.project-mast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 88px;
+  border-bottom: 1px solid var(--rule);
+}
+.project-page {
+  padding-block: clamp(2.2rem, 5vw, 5rem) clamp(3rem, 7vw, 7rem);
+}
+.project-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(240px, 0.7fr);
+  gap: clamp(1.4rem, 5vw, 6rem);
+  align-items: end;
+  margin-bottom: clamp(1.7rem, 3vw, 3rem);
+}
+.project-intro h1 {
+  font: 400 clamp(3.4rem, 6vw, 7.5rem)/0.99 var(--serif);
+  letter-spacing: -0.055em;
+  margin-top: 0.9rem;
+  overflow-wrap: anywhere;
+}
+.project-intro h1:focus {
+  outline: none;
+}
+.project-brief {
+  max-width: 52ch;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.project-brief .project-kind {
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+}
+.project-brief .project-credit {
+  margin-top: 0.5rem;
+}
+.project-gallery {
+  max-width: 1480px;
+  margin-inline: auto;
+}
+.photo-stage {
+  position: relative;
+  background: #eae9e6;
+  height: clamp(350px, 68svh, 850px);
+}
+.photo-stage > img,
+.photo-lightbox figure > img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.photo-stage,
+.photo-lightbox figure {
+  touch-action: pan-y pinch-zoom;
+}
+.expand-photo {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  background: #141414d9;
+  color: white;
+  border-radius: 50%;
+}
+.photo-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-block: 0.75rem;
+  font: 400 0.9rem/1.45 var(--sans);
+}
+.photo-pager {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 0.45rem;
+}
+.photo-pager button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+}
+.photo-pager button:hover,
+.photo-pager button:focus-visible {
+  border-color: var(--accent);
+}
+.photo-count {
+  font-variant-numeric: tabular-nums;
+  min-width: 3.3ch;
+  text-align: center;
+}
+.photo-thumbnails {
+  display: flex;
+  gap: 0.55rem;
+  overflow-x: auto;
+  padding: 5px;
+}
+.photo-thumbnails button {
+  flex: 0 0 clamp(64px, 8vw, 110px);
+  aspect-ratio: 1.5;
+  padding: 3px;
+  border: 2px solid transparent;
+}
+.photo-thumbnails button[aria-pressed="true"] {
+  border-color: var(--accent);
+}
+.photo-thumbnails img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sheet.photo-lightbox {
+  background: #141414;
+  color: #fff;
+  width: min(96vw, 1580px);
+  padding: clamp(0.7rem, 2vw, 1.7rem);
+}
+.photo-lightbox .close-btn {
+  position: absolute;
+  inset: 1rem 1rem auto auto;
+  margin: 0;
+  background: #191919d9;
+  border-color: #ffffff60;
+}
+.photo-lightbox figure > img {
+  height: 72svh;
+}
+.photo-lightbox .photo-bar {
+  padding-bottom: 0;
+}
+.project-consult {
+  margin-block: clamp(1.5rem, 3vw, 3rem);
+}
+.next-project {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  text-align: left;
+  gap: clamp(0.8rem, 3vw, 3.3rem);
+  border-top: 1px solid var(--rule);
+  padding: clamp(1.2rem, 2.5vw, 2.5rem) 0 0;
+}
+.next-project img {
+  width: clamp(72px, 14vw, 210px);
+  aspect-ratio: 1.6;
+  object-fit: cover;
+}
+.next-project small {
+  color: var(--muted);
+}
+.next-project strong {
+  display: block;
+  margin-top: 0.4rem;
+  font: 400 clamp(1.6rem, 3.5vw, 4.8rem)/1 var(--serif);
+}
+.next-project > svg {
+  flex: none;
+  margin-left: auto;
+}
+.project-pending {
+  min-height: 45svh;
+  padding-block: 5rem;
+}
+@media (max-width: 700px) {
+  .hero-thumbs {
+    display: none;
+  }
+  .project-mast {
+    min-height: 70px;
+  }
+  .project-mast .studio-logo {
+    --logo-size: 54px;
+  }
+  .project-intro {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .photo-stage {
+    height: clamp(280px, 52svh, 560px);
+  }
+  .photo-bar {
+    align-items: start;
+  }
+  .photo-pager {
+    gap: 3px;
+  }
+  .photo-pager button {
+    width: 35px;
+    height: 35px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-image {
+    transform: scale(1.055);
+    transition:
+      opacity 0.8s ease,
+      transform 6.5s ease-out;
+  }
+  .hero-image.shown {
+    transform: scale(1);
+  }
+  .project-intro,
+  .photo-stage > img,
+  .photo-lightbox figure > img,
+  .portfolio-feature img {
+    animation: studio-appear 0.44s ease-out both;
+  }
+  @keyframes studio-appear {
+    from {
+      opacity: 0.2;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}

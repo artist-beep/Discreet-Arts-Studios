@@ -1,6 +1,6 @@
 # Discrete Art Studio LLP
 
-A local-first build of the studio portfolio. Six residential, hospitality and retail concept albums, a three-image hero, Ongoing Works and Completed Works galleries, founder and partner profiles, a project enquiry form and a private enquiry dashboard. Project images are concept illustrations. The starting galleries illustrate both project stages. The supplied Discrete Arts logo defines the black, white and orange palette (#FF9933). Helvetica Neue and Baskerville use local system fallbacks. The full website loads manufacturer marks from official vendor sources when available. The standalone offline preview omits the brand marquee. Hettich logo discovery and live brand rendering need verification on a networked preview.
+A local-first build of the studio portfolio. Dedicated residential, hospitality and retail project pages with swipeable, keyboard-accessible image galleries, a three-image slideshow, Ongoing Works and Completed Works galleries, founder and partner profiles, a project enquiry form and a private enquiry dashboard. Project images are concept illustrations. The starting galleries illustrate both project stages. The supplied Discrete Arts logo defines the black, white and orange palette (#FF9933). Helvetica Neue and Baskerville use local system fallbacks. The full website loads manufacturer marks from official vendor sources when available. The standalone offline preview omits the brand marquee. Hettich logo discovery and live brand rendering need verification on a networked preview.
 
 ## Open the website
 

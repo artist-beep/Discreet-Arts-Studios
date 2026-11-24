@@ -18,6 +18,8 @@ import {
   Menu,
   X,
   MessageSquareText,
+  Pause,
+  Play,
 } from "lucide-react";
 import { initialContent, company, sectors } from "./content.js";
 import {
@@ -30,10 +32,12 @@ import {
   enablePixel,
   consent,
   changeConsent,
-  launchHash,
 } from "./client.js";
 import { Dialog } from "./dialog.jsx";
 import { StudioLogo } from "./studio-logo.jsx";
+import { ProjectLink } from "./project-link.jsx";
+import { ProjectPage } from "./project-page.jsx";
+import { revealWhenVisible } from "./reveal.js";
 import { Consult } from "./consult.jsx";
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 let motionModule;
@@ -84,9 +88,11 @@ const navigation = [
   ["contact", "Contact"],
 ];
 
-function Hero({ c, consult, section }) {
+function Hero({ c, consult, section, open, visible }) {
   const [slide, setSlide] = useState(0),
-    [menu, setMenu] = useState(false);
+    [menu, setMenu] = useState(false),
+    [rotating, setRotating] = useState(() => !reduced());
+  const region = useRef(null);
   const n = c.hero.length,
     idx = slide % n,
     s = c.hero[idx],
@@ -94,13 +100,69 @@ function Hero({ c, consult, section }) {
   useEffect(() => {
     animateIn(heading.current);
   }, []);
+  const featuredProject = c.projects.find((p) =>
+    p.images.some((im) => im.url === s.image),
+  );
+  useEffect(() => {
+    const media = matchMedia("(prefers-reduced-motion: reduce)");
+    function preference() {
+      if (media.matches) setRotating(false);
+    }
+    media.addEventListener("change", preference);
+    return () => media.removeEventListener("change", preference);
+  }, []);
+  useEffect(() => {
+    if (!rotating || !visible || menu || n < 2) return;
+    let timer,
+      inView = true;
+    function schedule() {
+      clearTimeout(timer);
+      if (inView && !document.hidden) {
+        timer = setTimeout(
+          () => setSlide((previous) => (previous + 1) % n),
+          6500,
+        );
+      }
+    }
+    let observer;
+    if (typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(([entry]) => {
+        inView = entry.isIntersecting;
+        schedule();
+      });
+      observer.observe(region.current);
+    }
+    document.addEventListener("visibilitychange", schedule);
+    schedule();
+    return () => {
+      clearTimeout(timer);
+      observer?.disconnect();
+      document.removeEventListener("visibilitychange", schedule);
+    };
+  }, [rotating, visible, menu, slide, n]);
+  function choose(i) {
+    setRotating(false);
+    setSlide(i);
+  }
   function jump(key) {
     setMenu(false);
     section(key);
   }
   const parts = c.headline.split("\n");
   return (
-    <section className="hero" id="home" aria-label="Studio introduction">
+    <section
+      className="hero"
+      id="home"
+      aria-label="Studio introduction"
+      ref={region}
+      onFocusCapture={(e) => {
+        if (
+          !region.current.contains(e.relatedTarget) &&
+          e.target.closest(".rotation-toggle") === null
+        )
+          setRotating(false);
+      }}
+    >
       {c.hero.map((im, i) => (
         <img
           className={"hero-image " + (i === idx ? "shown" : "")}
@@ -181,35 +243,72 @@ function Hero({ c, consult, section }) {
             c.headline
           )}
         </h1>
-        <button className="hero-cta" onClick={consult}>
-          Book consultation
-          <ArrowUpRight size={17} />
-        </button>
+        <div className="hero-actions">
+          <button className="hero-cta" onClick={consult}>
+            Book consultation
+            <ArrowUpRight size={17} />
+          </button>
+          {featuredProject && (
+            <button
+              className="hero-project-link"
+              aria-label={"Tour " + featuredProject.name}
+              onClick={() => open(featuredProject)}
+            >
+              Tour this project <ArrowUpRight size={16} />
+            </button>
+          )}
+        </div>
       </div>
       <div className="hero-baseline">
         <button className="scroll-cue" onClick={() => jump("ongoing-works")}>
           <ArrowDown size={16} /> Explore the work
         </button>
         <div className="slide-control" aria-label="Featured images">
-          <span className="slide-label" aria-live="polite">
+          <span className="slide-label" aria-live={rotating ? "off" : "polite"}>
             {s.label}
           </span>
+          <div
+            className="hero-thumbs"
+            role="group"
+            aria-label="Choose a featured interior"
+          >
+            {c.hero.map((im, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={"Show " + im.label}
+                aria-pressed={i === idx}
+                onClick={() => choose(i)}
+              >
+                <img src={asset(im.image)} alt="" />
+              </button>
+            ))}
+          </div>
           <span className="slide-index">
             {String(idx + 1).padStart(2, "0")} <b>/</b>{" "}
             {String(n).padStart(2, "0")}
           </span>
           <button
             aria-label="Previous featured image"
-            onClick={() => setSlide((idx + n - 1) % n)}
+            onClick={() => choose((idx + n - 1) % n)}
           >
             <ChevronLeft />
           </button>
           <button
             aria-label="Next featured image"
-            onClick={() => setSlide((idx + 1) % n)}
+            onClick={() => choose((idx + 1) % n)}
           >
             <ChevronRight />
           </button>
+          {n > 1 && (
+            <button
+              className="rotation-toggle"
+              aria-label={rotating ? "Pause slideshow" : "Play slideshow"}
+              onClick={() => setRotating((value) => !value)}
+            >
+              {rotating ? <Pause /> : <Play />}
+            </button>
+          )}
         </div>
       </div>
     </section>
@@ -217,24 +316,28 @@ function Hero({ c, consult, section }) {
 }
 function ProjectCard({ p, count, liked, onLike, share, open }) {
   return (
-    <article className="project">
-      <button
+    <article className="project" ref={revealWhenVisible}>
+      <ProjectLink
+        project={p}
+        open={open}
         className="project-photo"
         aria-label={"Open " + p.name + " gallery"}
         style={{ aspectRatio: p.aspect }}
-        onClick={open}
       >
         <img
           loading="lazy"
           src={asset(p.images[0].url)}
           alt={p.images[0].alt}
         />
-      </button>
+        <span className="project-open" aria-hidden="true">
+          View project <ArrowUpRight size={16} />
+        </span>
+      </ProjectLink>
       <div className="project-info">
-        <button className="project-title" onClick={open}>
+        <ProjectLink project={p} open={open} className="project-title">
           <span>{p.name}</span>
           <small>{p.type}</small>
-        </button>
+        </ProjectLink>
         <div className="project-actions">
           <button
             aria-label={(liked ? "Unlike " : "Like ") + p.name}
@@ -249,7 +352,7 @@ function ProjectCard({ p, count, liked, onLike, share, open }) {
           </button>
           <button
             aria-label={"View " + p.images.length + " images of " + p.name}
-            onClick={open}
+            onClick={() => open(p)}
           >
             <Layers />
             <span>{p.images.length}</span>
@@ -304,7 +407,7 @@ function WorkSection({ status, projects, card }) {
       aria-labelledby={id + "-heading"}
       className="work page-pad"
     >
-      <div className="section-top">
+      <div className="section-top" ref={revealWhenVisible}>
         <h2 id={id + "-heading"}>
           {status} <em>Works</em>
         </h2>
@@ -490,6 +593,7 @@ function Legal({ page, c, consult, preferences }) {
 export function Website() {
   const [c, setC] = useState(initialContent),
     [path, setPath] = useState(route),
+    [contentReady, setContentReady] = useState(portable),
     [overlay, setOverlay] = useState(""),
     [notice, setNotice] = useState(""),
     [shareInfo, setShareInfo] = useState(null),
@@ -498,7 +602,11 @@ export function Website() {
     [mine, setMine] = useState(portable ? getPrefs("offline-hearts", []) : []);
   const pending = useRef(new Set()),
     timer = useRef(null),
-    albumRef = useRef(null);
+    homePosition = useRef(null),
+    homeFocus = useRef(null),
+    previousProject = useRef(false);
+  const isProject = path.startsWith("/project/");
+  const hasVisitedHome = useRef(!isProject);
   const selected = path.startsWith("/project/")
     ? c.projects.find((p) => p.id === path.slice(9))
     : null;
@@ -516,7 +624,8 @@ export function Website() {
           setC(data);
           enablePixel(data.pixel);
         })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => setContentReady(true));
       api("hearts?device=" + device)
         .then((d) => {
           setCounts(d.counts);
@@ -530,18 +639,46 @@ export function Website() {
     };
   }, []);
   useEffect(() => {
-    if (selected) animateIn(albumRef.current);
     document.title =
       (selected?.name || legal || "Interior design") +
       " — Discrete Art Studio LLP";
   }, [selected, legal]);
+  useEffect(() => {
+    if (!isProject) {
+      hasVisitedHome.current = true;
+      if (previousProject.current) {
+        const destination = homePosition.current;
+        if (typeof destination === "number") {
+          window.scrollTo({ top: destination, behavior: "instant" });
+          homeFocus.current?.focus?.({ preventScroll: true });
+        } else {
+          document
+            .getElementById(destination || "ongoing-works")
+            ?.scrollIntoView({ behavior: "instant" });
+        }
+      }
+    }
+    previousProject.current = isProject;
+  }, [isProject]);
+  function openProject(project) {
+    if (!isProject) {
+      homePosition.current = window.scrollY;
+      homeFocus.current = document.activeElement;
+    }
+    go("/project/" + project.id);
+  }
+  function goHome(target) {
+    homePosition.current = target;
+    homeFocus.current = null;
+    go("/");
+  }
   function toast(t) {
     setNotice(t);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setNotice(""), 2500);
   }
   const consult = () => {
-    if (path !== "/") go("/");
+    if (legal) go("/");
     setOverlay("consult");
   };
   function section(id) {
@@ -597,7 +734,7 @@ export function Website() {
         liked={mine.includes(p.id)}
         onLike={() => like(p.id)}
         share={() => share(p)}
-        open={() => go("/project/" + p.id)}
+        open={openProject}
       />
     );
   }
@@ -621,24 +758,73 @@ export function Website() {
   const closePage = () => go("/");
   return (
     <>
-      <a className="skip" href="#ongoing-works">
-        Skip to ongoing works
-      </a>
-      <Hero c={c} consult={consult} section={section} />
-      <main>
-        <Partners content={c} open={(p) => go("/project/" + p.id)} />
-        <WorkSection status="Ongoing" projects={c.projects} card={card} />
-        <Invitation consult={consult} />
-        <WorkSection status="Completed" projects={c.projects} card={card} />
-        <Brands />
-        <ContactSection c={c} />
-      </main>
+      {isProject &&
+        (selected ? (
+          <ProjectPage
+            key={selected.id}
+            project={selected}
+            partners={c.partners}
+            next={
+              c.projects.length > 1
+                ? c.projects[
+                    (c.projects.indexOf(selected) + 1) % c.projects.length
+                  ]
+                : null
+            }
+            consult={consult}
+            open={openProject}
+            home={() => goHome("home")}
+            browse={() => {
+              if (homePosition.current === null)
+                homePosition.current =
+                  selected.workStatus === "Completed"
+                    ? "completed-works"
+                    : "ongoing-works";
+              go("/");
+            }}
+          />
+        ) : (
+          <main className="page-pad project-pending" aria-live="polite">
+            <h1>{contentReady ? "Project unavailable" : "Loading project…"}</h1>
+            {contentReady && (
+              <button
+                className="text-link"
+                onClick={() => goHome("ongoing-works")}
+              >
+                Browse projects
+              </button>
+            )}
+          </main>
+        ))}
+      {(!isProject || hasVisitedHome.current) && (
+        <div hidden={isProject}>
+          <a className="skip" href="#ongoing-works">
+            Skip to ongoing works
+          </a>
+          <Hero
+            c={c}
+            consult={consult}
+            section={section}
+            open={openProject}
+            visible={path === "/" && !overlay && !shareInfo}
+          />
+          <main>
+            <Partners content={c} open={openProject} />
+            <WorkSection status="Ongoing" projects={c.projects} card={card} />
+            <Invitation consult={consult} />
+            <WorkSection status="Completed" projects={c.projects} card={card} />
+            <Brands />
+            <ContactSection c={c} />
+          </main>
+        </div>
+      )}
       <footer>
         <a
           href="#home"
           onClick={(e) => {
             e.preventDefault();
-            section("home");
+            if (isProject) goHome("home");
+            else section("home");
           }}
         >
           <StudioLogo whiteLettering />
@@ -671,49 +857,12 @@ export function Website() {
           {notice}
         </div>
       )}
-      {selected && (
-        <Dialog wide kind="album" label={selected.name} onClose={closePage}>
-          <div ref={albumRef}>
-            <div className="album-top">
-              <div className="kicker">
-                <i />
-                {selected.type}
-              </div>
-              <h2>{selected.name}</h2>
-              <p>{selected.description}</p>
-              {selected.partnerIds?.length > 0 && (
-                <p className="project-credit">
-                  Project partners ·{" "}
-                  {c.partners
-                    .filter((p) => selected.partnerIds.includes(p.id))
-                    .map((p) => p.name)
-                    .join(", ")}
-                </p>
-              )}
-              <small>{selected.images.length} images</small>
-            </div>
-            {selected.images.map((im, i) => (
-              <figure key={i}>
-                <img
-                  src={asset(im.url)}
-                  alt={im.alt}
-                  loading={i ? "lazy" : "eager"}
-                />
-                <figcaption>{im.alt}</figcaption>
-              </figure>
-            ))}
-            <button className="solid" onClick={consult}>
-              Book consultation <ArrowUpRight size={15} />
-            </button>
-          </div>
-        </Dialog>
-      )}
       {legal && (
         <Dialog label={legal} kind="legal" onClose={closePage}>
           <Legal page={legal} c={c} consult={consult} preferences={prefs} />
         </Dialog>
       )}
-      {path !== "/" && !legal && !selected && (
+      {path !== "/" && !legal && !isProject && (
         <Dialog label="Page unavailable" onClose={closePage}>
           <h2>Page unavailable.</h2>
           <p>This page could not be found.</p>

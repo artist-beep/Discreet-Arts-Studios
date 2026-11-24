@@ -6,6 +6,8 @@ import {
   Instagram,
   MapPin,
 } from "lucide-react";
+import { ProjectLink } from "./project-link.jsx";
+import { revealWhenVisible } from "./reveal.js";
 import { asset } from "./client.js";
 import { sectors, cities, studioLocations } from "./content.js";
 import { EnquiryForm } from "./consult.jsx";
@@ -43,7 +45,7 @@ function PartnerWorks({ partners, projects, open }) {
       className="partner-portfolio"
       aria-labelledby="partner-works-heading"
     >
-      <header className="portfolio-heading">
+      <header ref={revealWhenVisible} className="portfolio-heading">
         <h3 id="partner-works-heading">
           Partners’ <em>work</em>
         </h3>
@@ -121,14 +123,15 @@ function PartnerWorks({ partners, projects, open }) {
             )}
           </div>
           {featured && (
-            <button
-              type="button"
+            <ProjectLink
+              project={featured}
+              open={open}
               className="portfolio-feature"
-              onClick={() => open(featured)}
               aria-label={"View gallery for " + featured.name}
             >
               <img
                 loading="lazy"
+                key={featured.id}
                 src={asset(featured.images[0].url)}
                 alt={featured.images[0].alt}
               />
@@ -141,7 +144,7 @@ function PartnerWorks({ partners, projects, open }) {
                   View gallery <ArrowUpRight size={16} aria-hidden="true" />
                 </span>
               </span>
-            </button>
+            </ProjectLink>
           )}
         </div>
       )}
@@ -166,7 +169,11 @@ export function Partners({ content, open }) {
         </a>
       </div>
       <div className="people-layout">
-        <div className="people-image" aria-hidden="true">
+        <div
+          ref={revealWhenVisible}
+          className="people-image"
+          aria-hidden="true"
+        >
           <img
             loading="lazy"
             src={asset("/media/kitchen-detail.webp")}
