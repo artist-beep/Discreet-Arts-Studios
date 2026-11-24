@@ -380,8 +380,7 @@ footer .studio-logo {
   gap: 2rem;
   margin-bottom: clamp(2.4rem, 4.8vw, 4.8rem);
 }
-.section-top h2,
-.partners > h2 {
+.section-top h2 {
   font-size: clamp(3.6rem, 5.8vw, 7rem);
   letter-spacing: -0.054em;
   line-height: 1.05;
@@ -1029,8 +1028,7 @@ textarea {
     max-width: 390px;
     font-size: 0.94rem;
   }
-  .section-top h2,
-  .partners > h2 {
+  .section-top h2 {
     font-size: clamp(3.4rem, 10vw, 4.6rem);
   }
   .invitation {
@@ -1156,9 +1154,6 @@ textarea {
 .partners {
   border-bottom: 1px solid var(--rule);
 }
-.partners > h2 {
-  margin: 0 0 clamp(1.7rem, 3.5vw, 3.8rem);
-}
 .people-layout {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
@@ -1206,6 +1201,121 @@ textarea {
 .person-works ul {
   list-style: none;
   padding: 0;
+}
+.partner-portfolio {
+  margin-top: clamp(3rem, 6vw, 7rem);
+  padding-top: clamp(1.6rem, 3vw, 3.4rem);
+  border-top: 1px solid var(--rule);
+  scroll-margin-top: 1rem;
+}
+.portfolio-heading {
+  display: flex;
+  gap: 1rem 2rem;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: clamp(1.4rem, 3vw, 3rem);
+}
+.portfolio-heading h3 {
+  font-size: clamp(2.6rem, 4.5vw, 5.4rem);
+  letter-spacing: -0.05em;
+  line-height: 1.04;
+}
+.portfolio-heading p,
+.portfolio-empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.portfolio-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.65fr) minmax(0, 1.35fr);
+  gap: clamp(1.5rem, 4vw, 4.5rem);
+  align-items: start;
+}
+.portfolio-filter {
+  display: grid;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.88rem;
+}
+.portfolio-projects {
+  list-style: none;
+  padding: 0;
+  margin: 0.6rem 0 0;
+}
+.portfolio-projects button {
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.8rem 1rem;
+}
+.portfolio-projects button[aria-pressed="true"] {
+  background: #f1f1ef;
+  box-shadow: inset 3px 0 var(--accent);
+}
+.portfolio-projects span,
+.portfolio-projects small {
+  display: block;
+}
+.portfolio-projects span {
+  font-size: clamp(1.05rem, 1.5vw, 1.6rem);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+.portfolio-projects small {
+  margin-top: 0.3rem;
+  color: var(--muted);
+  font-size: 0.79rem;
+}
+.portfolio-empty {
+  margin-top: 1rem;
+}
+.portfolio-feature {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  text-align: left;
+  width: 100%;
+  padding: 0;
+  background: var(--ink);
+  color: white;
+}
+.portfolio-feature img {
+  width: 100%;
+  aspect-ratio: 1.65;
+  object-fit: cover;
+}
+.portfolio-caption {
+  position: absolute;
+  inset: auto 0 0;
+  padding: clamp(2.5rem, 6vw, 5rem) clamp(1rem, 3vw, 3rem)
+    clamp(1rem, 2.5vw, 2.5rem);
+  background: linear-gradient(transparent, #000a 48%, #000d);
+}
+.portfolio-caption strong {
+  display: block;
+  font: 400 clamp(1.65rem, 3vw, 3.5rem)/1.1 var(--serif);
+}
+.portfolio-caption small {
+  display: block;
+  font-size: 0.83rem;
+  margin-bottom: 0.3rem;
+}
+.portfolio-caption > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.86rem;
+}
+.portfolio-feature:hover .portfolio-caption > span {
+  text-decoration: underline;
+}
+@media (max-width: 700px) {
+  .portfolio-layout {
+    grid-template-columns: 1fr;
+  }
 }
 .work .segmented {
   margin: -1rem 0 1.5rem;
