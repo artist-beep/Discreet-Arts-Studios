@@ -4,7 +4,6 @@ import {
   cities,
   sectors,
   workStatuses,
-  partnerFocus,
   withPortfolioDefaults,
 } from "../src/content.js";
 export const emailOk = (value) =>
@@ -53,10 +52,9 @@ export function parseLead(body) {
     !phone || phoneOk(phone),
     "Include the country code, for example +91.",
   );
-  const isPartner = body.enquiry_type === "partner";
   requireThat(
-    !body.enquiry_type || ["project", "partner"].includes(body.enquiry_type),
-    "Choose an enquiry type.",
+    !body.enquiry_type || body.enquiry_type === "project",
+    "This form accepts project enquiries only.",
   );
   const location = field(body.location ?? "", 100, "the city");
   requireThat(
@@ -64,40 +62,8 @@ export function parseLead(body) {
     "Choose a city.",
   );
   const message = field(body.message ?? "", 2000, "the project details");
-  let partnerFields;
-  if (isPartner) {
-    const organisation = field(
-      body.organisation,
-      200,
-      "the partner or studio name",
-      true,
-    );
-    requireThat(
-      partnerFocus.includes(body.work_focus),
-      "Choose a work category.",
-    );
-    const portfolio_url = field(
-      body.portfolio_url ?? "",
-      2048,
-      "the portfolio URL",
-    );
-    if (portfolio_url)
-      requireThat(
-        secureUrl(portfolio_url),
-        "Enter a complete HTTPS portfolio link.",
-      );
-    partnerFields = {
-      organisation,
-      work_focus: body.work_focus,
-      portfolio_url,
-    };
-  } else {
-    requireThat(bedrooms.includes(body.bhk), "Choose the property size.");
-    requireThat(
-      scopes.includes(body.scope_of_work),
-      "Choose the scope of work.",
-    );
-  }
+  requireThat(bedrooms.includes(body.bhk), "Choose the property size.");
+  requireThat(scopes.includes(body.scope_of_work), "Choose the scope of work.");
   const inputUrl = field(body.page_url ?? "", 2048, "the page URL");
   let page_url = "";
   if (inputUrl) {
@@ -122,10 +88,9 @@ export function parseLead(body) {
     name,
     email,
     phone,
-    ...(isPartner
-      ? partnerFields
-      : { bhk: body.bhk, scope_of_work: body.scope_of_work }),
-    form_name: isPartner ? "Partnership enquiry" : "Studio consultation",
+    bhk: body.bhk,
+    scope_of_work: body.scope_of_work,
+    form_name: "Studio consultation",
     page_url,
     utm,
     version: 1,
@@ -227,6 +192,10 @@ export function validateContent(c, previous) {
       );
     }
   }
+  output.founder = {
+    name: field(c.founder?.name, 140, "founder name", true),
+    bio: field(c.founder?.bio, 700, "founder bio", true),
+  };
   output.partners = list(c.partners, 0, 60).map((p) => ({
     id: slug(p.id),
     name: field(p.name, 140, "partner name", true),

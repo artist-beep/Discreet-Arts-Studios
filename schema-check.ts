@@ -15,6 +15,7 @@ type Content = {
   headline: string;
   hero: { image: string; label: string }[];
   projects: Project[];
+  founder: { name: string; bio: string };
   partners: { id: string; name: string; role: string; bio: string }[];
   facebook: string;
   instagram: string;

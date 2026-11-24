@@ -19,7 +19,7 @@ import {
   X,
   MessageSquareText,
 } from "lucide-react";
-import { initialContent, company } from "./content.js";
+import { initialContent, company, brandLogo, sectors } from "./content.js";
 import {
   api,
   asset,
@@ -59,29 +59,13 @@ if (!portable && !location.pathname.startsWith("/admin")) {
 }
 function Wordmark() {
   return (
-    <span className="wordmark">
-      <svg
-        viewBox="0 0 42 42"
-        width="39"
-        height="39"
-        fill="none"
-        aria-hidden="true"
-      >
-        <path
-          d="M3 35V7h9.5C21 7 27 12.7 27 21s-6 14-14.5 14H3Z"
-          stroke="currentColor"
-          strokeWidth="1.8"
-        />
-        <path
-          d="m15 35 12-28 12 28M20.1 23h13.7"
-          stroke="currentColor"
-          strokeWidth="1.8"
-        />
-      </svg>
-      <span>
-        DISCRETE<small>ART STUDIO LLP</small>
-      </span>
-    </span>
+    <img
+      className="studio-logo"
+      src={asset(brandLogo)}
+      width="176"
+      height="156"
+      alt="Discrete Arts"
+    />
   );
 }
 function route() {
@@ -318,7 +302,9 @@ function Masonry({ items, card }) {
   );
 }
 function WorkSection({ status, projects, card }) {
-  const gallery = projects.filter((p) => p.workStatus === status);
+  const [sector, setSector] = useState("All");
+  const works = projects.filter((p) => p.workStatus === status);
+  const gallery = works.filter((p) => sector === "All" || p.sector === sector);
   const examples =
     gallery.length > 0 && gallery.every((p) => /\bconcept\b/i.test(p.type));
   const id = status.toLowerCase() + "-works";
@@ -334,11 +320,30 @@ function WorkSection({ status, projects, card }) {
         </h2>
         {examples && <p>Concept galleries illustrating this section.</p>}
       </div>
+      {works.length > 0 && (
+        <div
+          className="segmented"
+          role="group"
+          aria-label={status + " work category"}
+        >
+          {["All", ...sectors].map((category) => (
+            <button
+              key={category}
+              aria-pressed={category === sector}
+              onClick={() => setSector(category)}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+      )}
       {gallery.length ? (
         <Masonry items={gallery} card={card} />
       ) : (
         <p className="work-empty">
-          No {status.toLowerCase()} projects are featured yet.
+          No {status.toLowerCase()}{" "}
+          {sector === "All" ? "" : sector.toLowerCase() + " "}projects are
+          featured yet.
         </p>
       )}
     </section>
@@ -427,10 +432,10 @@ function Legal({ page, c, consult, preferences }) {
         </h2>
         <h3>Your enquiry</h3>
         <p>
-          Discrete Art Studio LLP uses the contact details, city, project or
-          partnership information, property size and scope you provide to
-          respond to your enquiry and discuss your project. The website stores
-          these details in the studio’s private enquiry dashboard.
+          Discrete Art Studio LLP uses the contact details, city, project brief,
+          property size and scope you provide to respond to your enquiry and
+          discuss your project. The website stores these details in the studio’s
+          private enquiry dashboard.
         </p>
         <h3>Grid CRM</h3>
         <p>
@@ -496,7 +501,6 @@ export function Website() {
   const [c, setC] = useState(initialContent),
     [path, setPath] = useState(route),
     [overlay, setOverlay] = useState(""),
-    [enquiryKind, setEnquiryKind] = useState("project"),
     [notice, setNotice] = useState(""),
     [shareInfo, setShareInfo] = useState(null),
     [tracking, setTracking] = useState(consent),
@@ -632,19 +636,12 @@ export function Website() {
       </a>
       <Hero c={c} consult={consult} section={section} />
       <main>
-        <Partners
-          content={c}
-          open={(p) => go("/project/" + p.id)}
-          enquire={() => {
-            setEnquiryKind("partner");
-            section("contact");
-          }}
-        />
+        <Partners content={c} open={(p) => go("/project/" + p.id)} />
         <WorkSection status="Ongoing" projects={c.projects} card={card} />
         <Invitation consult={consult} />
         <WorkSection status="Completed" projects={c.projects} card={card} />
         <Brands />
-        <ContactSection c={c} kind={enquiryKind} setKind={setEnquiryKind} />
+        <ContactSection c={c} />
       </main>
       <footer>
         <a

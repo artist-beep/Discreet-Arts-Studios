@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, Check, Mail } from "lucide-react";
 import { Dialog } from "./dialog.jsx";
-import { scopes, bedrooms, cities, partnerFocus } from "./content.js";
+import { scopes, bedrooms, cities } from "./content.js";
 import { api, attribution, portable, storage, trackLead } from "./client.js";
 
 function Choice({ label, name, options, placeholder }) {
@@ -19,14 +19,9 @@ function Choice({ label, name, options, placeholder }) {
     </label>
   );
 }
-export function EnquiryForm({
-  kind = "project",
-  email,
-  inline = false,
-  onDone,
-}) {
-  const partner = kind === "partner",
-    storageKey = "active-enquiry-" + kind + (inline ? "-contact" : "-modal");
+export function EnquiryForm({ email, inline = false, onDone }) {
+  const storageKey =
+    "active-enquiry-project" + (inline ? "-contact" : "-modal");
   const container = useRef(null),
     stamp = useRef(""),
     id = useRef(null),
@@ -40,7 +35,7 @@ export function EnquiryForm({
     function loadStamp() {
       if (portable || requested) return;
       requested = true;
-      api("stamp?form=" + kind)
+      api("stamp?form=project")
         .then((r) => {
           if (active) stamp.current = r.stamp;
         })
@@ -64,7 +59,7 @@ export function EnquiryForm({
       active = false;
       observer?.disconnect();
     };
-  }, [kind, inline]);
+  }, [inline]);
   async function submit(e) {
     e.preventDefault();
     if (busy) return;
@@ -85,25 +80,12 @@ export function EnquiryForm({
       setError("Unable to accept this enquiry.");
       return;
     }
-    if (partner && f.portfolio_url) {
-      try {
-        const u = new URL(f.portfolio_url);
-        if (u.protocol !== "https:" || u.username || u.password) throw Error();
-      } catch {
-        setError("Use a complete HTTPS link for your portfolio.");
-        return;
-      }
-    }
-    const subject = partner ? "Partnership enquiry" : "Interior design enquiry";
     if (portable) {
       const lines = [
         ["Name", f.name],
         ["Email", f.email],
         ["WhatsApp", f.phone],
         ["City", f.location],
-        ["Studio / firm", f.organisation],
-        ["Portfolio", f.portfolio_url],
-        ["Work category", f.work_focus],
         ["Property", f.bhk],
         ["Scope", f.scope_of_work],
         ["Details", f.message],
@@ -116,7 +98,7 @@ export function EnquiryForm({
           ? "mailto:" +
             email +
             "?subject=" +
-            encodeURIComponent(subject) +
+            encodeURIComponent("Interior design enquiry") +
             "&body=" +
             encodeURIComponent(lines.join("\n"))
           : "",
@@ -136,7 +118,7 @@ export function EnquiryForm({
       const reply = await api("leads", {
         ...f,
         ...attribution,
-        enquiry_type: kind,
+        enquiry_type: "project",
         stamp: stamp.current,
         submission_id: id.current,
       });
@@ -144,7 +126,7 @@ export function EnquiryForm({
         throw Error("The enquiry could not be confirmed. Please try again.");
       storage("sessionStorage", storageKey, null);
       setResult({ saved: true });
-      if (!partner) trackLead(reply);
+      trackLead(reply);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -227,60 +209,26 @@ export function EnquiryForm({
           <p className="hint">Please include at least one way to reach you.</p>
           <div className="form-pair">
             <Choice
-              label={partner ? "City" : "Project city"}
+              label="Project city"
               name="location"
               options={[...cities, "Other"]}
               placeholder="Select city"
             />
-            {partner ? (
-              <Choice
-                label="Work category"
-                name="work_focus"
-                options={partnerFocus}
-                placeholder="Select category"
-              />
-            ) : (
-              <Choice
-                label="Property size"
-                name="bhk"
-                options={bedrooms}
-                placeholder="Select size"
-              />
-            )}
-          </div>
-          {partner ? (
-            <>
-              <label>
-                Studio or firm
-                <input
-                  name="organisation"
-                  autoComplete="organization"
-                  required
-                  maxLength={200}
-                />
-              </label>
-              <label>
-                Portfolio link (optional)
-                <input
-                  name="portfolio_url"
-                  type="url"
-                  placeholder="https://"
-                  maxLength={2048}
-                />
-              </label>
-            </>
-          ) : (
             <Choice
-              label="Scope of work"
-              name="scope_of_work"
-              options={scopes}
-              placeholder="Select scope"
+              label="Property size"
+              name="bhk"
+              options={bedrooms}
+              placeholder="Select size"
             />
-          )}
+          </div>
+          <Choice
+            label="Scope of work"
+            name="scope_of_work"
+            options={scopes}
+            placeholder="Select scope"
+          />
           <label>
-            {partner
-              ? "About your work (optional)"
-              : "Tell us about your project (optional)"}
+            Tell us about your project (optional)
             <textarea name="message" rows={2} maxLength={2000} />
           </label>
           <div className="trap" aria-hidden="true">
@@ -304,9 +252,7 @@ export function EnquiryForm({
               ? "Saving…"
               : portable
                 ? "Prepare enquiry email"
-                : partner
-                  ? "Send partner details"
-                  : "Send project enquiry"}
+                : "Send project enquiry"}
             <ArrowUpRight size={16} />
           </button>
         </form>

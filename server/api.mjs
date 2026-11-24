@@ -112,14 +112,11 @@ export async function handle(request, { db, secret, clock = Date.now }) {
       const { films, studioImage, subtitle, ...publicContent } = content;
       return json(publicContent);
     }
-    if (path === "/api/stamp" && method === "GET")
-      return json({
-        stamp: signStamp(
-          secret,
-          now,
-          url.searchParams.get("form") === "partner" ? "partner" : "project",
-        ),
-      });
+    if (path === "/api/stamp" && method === "GET") {
+      const form = url.searchParams.get("form");
+      requireThat(!form || form === "project", "Unknown form.", 404);
+      return json({ stamp: signStamp(secret, now) });
+    }
     if (path === "/api/hearts" && method === "GET") {
       const rows = await db.all(
         "SELECT project,COUNT(*) AS count FROM hearts GROUP BY project",
@@ -180,14 +177,7 @@ export async function handle(request, { db, secret, clock = Date.now }) {
         payload.submission_id,
         new Date(now).toISOString(),
         body,
-        Number(
-          suspected(
-            secret,
-            b.stamp,
-            now,
-            b.enquiry_type === "partner" ? "partner" : "project",
-          ),
-        ),
+        Number(suspected(secret, b.stamp, now)),
       );
       const saved = await db.first(
         "SELECT payload,suspected_spam FROM leads WHERE submission_id=?",
@@ -201,8 +191,7 @@ export async function handle(request, { db, secret, clock = Date.now }) {
       return json(
         {
           submission_id: payload.submission_id,
-          conversion_eligible:
-            !saved.suspected_spam && b.enquiry_type !== "partner",
+          conversion_eligible: !saved.suspected_spam,
         },
         201,
       );

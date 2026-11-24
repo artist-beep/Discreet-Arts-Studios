@@ -2,8 +2,10 @@
 import { readFileSync, writeFileSync, readdirSync, mkdirSync } from "node:fs";
 import { resolve, extname, dirname } from "node:path";
 import "./preview-shell.mjs";
-import { initialContent } from "../src/content.js";
+import { initialContent, brandLogo } from "../src/content.js";
 const previewImages = new Set([
+  brandLogo,
+  "/media/kitchen-detail.webp",
   ...initialContent.hero.map((slide) => slide.image),
   ...initialContent.projects.flatMap((project) =>
     project.images.map((image) => image.url),
@@ -21,7 +23,7 @@ const mime = {
   ".ttf": "font/ttf",
   ".woff": "font/woff",
 };
-for (const dir of ["media", "stories", "brands", "fonts"]) {
+for (const dir of ["identity", "media", "stories", "brands", "fonts"]) {
   let files;
   try {
     files = readdirSync(resolve(root, dir));
@@ -53,6 +55,7 @@ for (const [key, value] of Object.entries(assets))
   if (key.startsWith("/fonts/")) css = css.replaceAll(key, value);
 const markup = readFileSync(".preview-work/fallback.html", "utf8");
 html = html
+  .replace('href="' + brandLogo + '"', () => 'href="' + assets[brandLogo] + '"')
   .replace(scripts, "")
   .replace(styles, () => "<style>" + css + "</style>")
   .replace('<div id="root"></div>', () => '<div id="root">' + markup + "</div>")

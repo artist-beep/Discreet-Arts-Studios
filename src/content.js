@@ -1,8 +1,8 @@
+export const brandLogo = "/identity/discrete-arts.png";
 export const company = "Discrete Art Studio LLP";
 export const cities = ["Bangalore", "Hyderabad"];
 export const sectors = ["Residential", "Commercial"];
 export const workStatuses = ["Unassigned", "Ongoing", "Completed"];
-export const partnerFocus = [...sectors, "Residential and commercial"];
 export const studioLocations = {
   Bangalore: "Karnataka",
   Hyderabad: "Telangana",
@@ -14,7 +14,24 @@ export const initialContent = {
     { image: "/media/dining.webp", label: "The Walnut Dining Room" },
     { image: "/media/cafe.webp", label: "The Terracotta Café" },
   ],
-  partners: [],
+  founder: {
+    name: "Srikanth Potekulla",
+    bio: "Srikanth founded Discrete Art Studio LLP. The practice designs homes and commercial spaces in Bangalore and Hyderabad.",
+  },
+  partners: [
+    {
+      id: "kokila",
+      name: "Kokila",
+      role: "Designated partner",
+      bio: "Kokila joined the partnership at Discrete Art Studio LLP in February 2023.",
+    },
+    {
+      id: "krishnappa-sunitha",
+      name: "Krishnappa Sunitha",
+      role: "Designated partner",
+      bio: "Sunitha became a designated partner of Discrete Art Studio LLP in April 2024.",
+    },
+  ],
   projects: [
     {
       id: "courtyard-house",
@@ -168,6 +185,9 @@ export const bedrooms = [
 // Keep previously saved CMS content usable without changing the owner's edits.
 export function withPortfolioDefaults(saved) {
   const content = { ...initialContent, ...saved };
+  if (saved && !("founder" in saved) && saved.partners?.length === 0) {
+    content.partners = initialContent.partners;
+  }
   return {
     ...content,
     projects: content.projects.map((p) => ({

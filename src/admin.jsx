@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Sun, Moon, LogOut, Download, Plus, Trash2 } from "lucide-react";
-import { sectors, workStatuses } from "./content.js";
+import { sectors, workStatuses, brandLogo } from "./content.js";
 import { api, getPrefs, setPrefs } from "./client.js";
 function Field({ label, value, change, area = false, ...props }) {
   return (
@@ -120,7 +120,12 @@ function Editor({ onNotice }) {
         )}
       </details>
       <details>
-        <summary>Partners and project credits</summary>
+        <summary>Founder, partners and project credits</summary>
+        <fieldset>
+          <legend>Founder</legend>
+          {input("Name", ["founder", "name"], data.founder.name)}
+          {input("Short bio", ["founder", "bio"], data.founder.bio, true)}
+        </fieldset>
         {data.partners.map((partner, i) => (
           <fieldset key={partner.id}>
             <legend>{partner.name || "New partner"}</legend>
@@ -503,7 +508,15 @@ export function Admin({ ticket }) {
   return (
     <main className={"admin " + (dark ? "dark" : "")}>
       <header>
-        <a href="/">Discrete Art Studio LLP</a>
+        <a href="/" aria-label="Discrete Art Studio home">
+          <img
+            className="studio-logo"
+            src={brandLogo}
+            alt="Discrete Arts"
+            width="176"
+            height="156"
+          />
+        </a>
         <div>
           <button
             aria-label="Toggle dashboard theme"

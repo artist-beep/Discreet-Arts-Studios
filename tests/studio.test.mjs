@@ -268,7 +268,8 @@ test("partner credits, project categories and locations survive CMS updates and 
   const { db, req } = harness();
   try {
     const legacy = structuredClone(initialContent);
-    delete legacy.partners;
+    delete legacy.founder;
+    legacy.partners = [];
     delete legacy.facebook;
     for (const p of legacy.projects) {
       delete p.partnerIds;
@@ -279,7 +280,16 @@ test("partner credits, project categories and locations survive CMS updates and 
       JSON.stringify(legacy),
     );
     const restored = await (await req("content")).json();
-    assert.deepEqual(restored.partners, []);
+    assert.deepEqual(restored.partners, initialContent.partners);
+    assert.deepEqual(restored.founder, initialContent.founder);
+    assert.deepEqual(
+      validateContent({ ...restored, partners: [] }).partners,
+      [],
+    );
+    assert.throws(() =>
+      validateContent({ ...restored, founder: { name: "", bio: "" } }),
+    );
+
     assert.equal(
       restored.projects.find((p) => p.type === "Hospitality concept").sector,
       "Commercial",
@@ -304,7 +314,7 @@ test("partner credits, project categories and locations survive CMS updates and 
     db.close();
   }
 });
-test("partner form and city-specific project form reach the CRM and CSV with the correct classification", async () => {
+test("project enquiries remain available and archived partnership enquiries remain readable", async () => {
   const { db, t, req } = harness();
   try {
     const ticket = await issueTicket(db, email, "setup", t.now);
@@ -314,7 +324,7 @@ test("partner form and city-specific project form reach the CRM and CSV with the
     ).headers
       .get("Set-Cookie")
       .split(";")[0];
-    const stamp = (await (await req("stamp?form=partner")).json()).stamp;
+    assert.equal((await req("stamp?form=partner")).status, 404);
     const projectStamp = (await (await req("stamp?form=project")).json()).stamp;
     t.now += 2100;
     const partner = {
@@ -327,36 +337,25 @@ test("partner form and city-specific project form reach the CRM and CSV with the
       work_focus: "Commercial",
       portfolio_url: "https://example.invalid/work",
       message: "QA portfolio submission",
-      stamp,
     };
-    let res = await req("leads", partner);
-    assert.equal(res.status, 201);
-    assert.equal((await res.json()).conversion_eligible, false);
     assert.equal(
-      (await req("leads", { ...partner, portfolio_url: "javascript:alert(0)" }))
-        .status,
+      (await req("leads", { ...partner, stamp: projectStamp })).status,
       400,
     );
-    assert.equal(
-      (await req("leads", { ...partner, work_focus: "other" })).status,
-      400,
-    );
-    assert.equal(
-      (
-        await req("leads", {
-          ...partner,
-          submission_id: randomUUID(),
-          stamp: projectStamp,
-        })
-      ).status,
-      201,
+    assert.equal(db.first("SELECT COUNT(*) AS n FROM leads").n, 0);
+    const archive = { ...partner, form_name: "Partnership enquiry" };
+    db.run(
+      "INSERT INTO leads(submission_id,created_at,payload,suspected_spam) VALUES(?,?,?,0)",
+      archive.submission_id,
+      new Date(t.now).toISOString(),
+      JSON.stringify(archive),
     );
     const project = {
       ...enquiry(projectStamp),
       location: "Bangalore",
       message: "QA project details",
     };
-    res = await req("leads", project);
+    const res = await req("leads", project);
     assert.equal((await res.json()).conversion_eligible, true);
     const rows = await (await req("admin/leads", undefined, session)).json();
     assert.equal(
@@ -364,7 +363,7 @@ test("partner form and city-specific project form reach the CRM and CSV with the
         .suspected_spam,
       false,
     );
-    assert.equal(rows.filter((r) => r.suspected_spam).length, 1);
+    assert.equal(rows.filter((r) => r.suspected_spam).length, 0);
     assert.equal(
       rows.find((r) => r.submission_id === project.submission_id).location,
       "Bangalore",

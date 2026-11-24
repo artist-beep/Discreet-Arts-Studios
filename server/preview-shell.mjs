@@ -2,7 +2,7 @@
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 const map = {};
-for (const dir of ["media", "brands", "stories"]) {
+for (const dir of ["identity", "media", "brands", "stories"]) {
   const base = resolve("public", dir);
   let files = [];
   try {
