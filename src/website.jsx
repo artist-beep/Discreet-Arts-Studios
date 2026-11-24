@@ -19,7 +19,7 @@ import {
   X,
   MessageSquareText,
 } from "lucide-react";
-import { initialContent, company, brandLogo, sectors } from "./content.js";
+import { initialContent, company, sectors } from "./content.js";
 import {
   api,
   asset,
@@ -33,6 +33,7 @@ import {
   launchHash,
 } from "./client.js";
 import { Dialog } from "./dialog.jsx";
+import { StudioLogo } from "./studio-logo.jsx";
 import { Consult } from "./consult.jsx";
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 let motionModule;
@@ -56,17 +57,6 @@ if (!portable && !location.pathname.startsWith("/admin")) {
       motionModule = m;
     })
     .catch(() => {});
-}
-function Wordmark() {
-  return (
-    <img
-      className="studio-logo"
-      src={asset(brandLogo)}
-      width="176"
-      height="156"
-      alt="Discrete Arts"
-    />
-  );
 }
 function route() {
   if (portable)
@@ -131,7 +121,7 @@ function Hero({ c, consult, section }) {
           }}
           aria-label="Discrete Art Studio home"
         >
-          <Wordmark />
+          <StudioLogo />
         </a>
         <nav aria-label="Main navigation">
           {navigation.map(([id, label]) => (
@@ -651,7 +641,7 @@ export function Website() {
             section("home");
           }}
         >
-          <Wordmark />
+          <StudioLogo />
         </a>
         <div>
           <button onClick={() => go("/contact")}>Contact us</button>

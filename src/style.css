@@ -2,13 +2,13 @@
 @theme {
   --color-paper: #fafafa;
   --color-ink: #171717;
-  --color-brand-orange: #ff9934;
+  --color-brand-orange: #ff9933;
 }
 :root {
   --paper: #fafafa;
   --ink: #171717;
   --muted: #555555;
-  --accent: #ff9934;
+  --accent: #ff9933;
   --accent-text: #924700;
   --rule: #d7d7d7;
   --serif: Baskerville, "Iowan Old Style", Georgia, serif;
@@ -174,12 +174,24 @@ em {
 }
 .studio-logo {
   display: block;
-  width: auto;
-  height: 74px;
-  object-fit: contain;
+  position: relative;
+  --logo-size: 74px;
+  width: var(--logo-size);
+  height: var(--logo-size);
+  overflow: hidden;
+  background: #fff;
+}
+/* Frame the artwork within the transparent margins of the supplied 500px PNG. */
+.studio-logo img {
+  position: absolute;
+  width: 156.25%;
+  max-width: none;
+  height: auto;
+  left: -30.94%;
+  top: -20.78%;
 }
 footer .studio-logo {
-  height: 86px;
+  --logo-size: 86px;
 }
 .mast nav {
   display: flex;
@@ -1439,7 +1451,7 @@ textarea {
     aspect-ratio: 2.15;
   }
   .mast .studio-logo {
-    height: 54px;
+    --logo-size: 54px;
   }
 }
 

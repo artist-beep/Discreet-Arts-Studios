@@ -1,4 +1,4 @@
-export const brandLogo = "/identity/discrete-arts.png";
+export const brandLogo = "/identity/discrete-arts-logo.png";
 export const company = "Discrete Art Studio LLP";
 export const cities = ["Bangalore", "Hyderabad"];
 export const sectors = ["Residential", "Commercial"];

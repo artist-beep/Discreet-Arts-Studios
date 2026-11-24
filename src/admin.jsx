@@ -1,6 +1,7 @@
+import { StudioLogo } from "./studio-logo.jsx";
 import React, { useEffect, useRef, useState } from "react";
 import { Sun, Moon, LogOut, Download, Plus, Trash2 } from "lucide-react";
-import { sectors, workStatuses, brandLogo } from "./content.js";
+import { sectors, workStatuses } from "./content.js";
 import { api, getPrefs, setPrefs } from "./client.js";
 function Field({ label, value, change, area = false, ...props }) {
   return (
@@ -509,13 +510,7 @@ export function Admin({ ticket }) {
     <main className={"admin " + (dark ? "dark" : "")}>
       <header>
         <a href="/" aria-label="Discrete Art Studio home">
-          <img
-            className="studio-logo"
-            src={brandLogo}
-            alt="Discrete Arts"
-            width="176"
-            height="156"
-          />
+          <StudioLogo />
         </a>
         <div>
           <button
