@@ -1,5 +1,5 @@
 import { brandImages } from "./brands.mjs";
-import { initialContent } from "../src/content.js";
+import { initialContent, withPortfolioDefaults } from "../src/content.js";
 import {
   parseLead,
   uuidOk,
@@ -67,7 +67,10 @@ async function read(request, max) {
 export async function currentContent(db) {
   const r = await db.first("SELECT body,revision FROM content WHERE id=1");
   return r
-    ? { content: JSON.parse(r.body), revision: r.revision }
+    ? {
+        content: withPortfolioDefaults(JSON.parse(r.body)),
+        revision: r.revision,
+      }
     : { content: structuredClone(initialContent), revision: 0 };
 }
 function csvValue(value) {
@@ -109,7 +112,13 @@ export async function handle(request, { db, secret, clock = Date.now }) {
       return json(content);
     }
     if (path === "/api/stamp" && method === "GET")
-      return json({ stamp: signStamp(secret, now) });
+      return json({
+        stamp: signStamp(
+          secret,
+          now,
+          url.searchParams.get("form") === "partner" ? "partner" : "project",
+        ),
+      });
     if (path === "/api/hearts" && method === "GET") {
       const rows = await db.all(
         "SELECT project,COUNT(*) AS count FROM hearts GROUP BY project",
@@ -170,7 +179,14 @@ export async function handle(request, { db, secret, clock = Date.now }) {
         payload.submission_id,
         new Date(now).toISOString(),
         body,
-        Number(suspected(secret, b.stamp, now)),
+        Number(
+          suspected(
+            secret,
+            b.stamp,
+            now,
+            b.enquiry_type === "partner" ? "partner" : "project",
+          ),
+        ),
       );
       const saved = await db.first(
         "SELECT payload,suspected_spam FROM leads WHERE submission_id=?",
@@ -184,7 +200,8 @@ export async function handle(request, { db, secret, clock = Date.now }) {
       return json(
         {
           submission_id: payload.submission_id,
-          conversion_eligible: !saved.suspected_spam,
+          conversion_eligible:
+            !saved.suspected_spam && b.enquiry_type !== "partner",
         },
         201,
       );
@@ -302,6 +319,12 @@ export async function handle(request, { db, secret, clock = Date.now }) {
         "scope_of_work",
         "status",
         "delivery",
+        "form_name",
+        "location",
+        "message",
+        "organisation",
+        "work_focus",
+        "portfolio_url",
       ];
       const rows = (await db.all(leadQuery)).map(leadView);
       return new Response(

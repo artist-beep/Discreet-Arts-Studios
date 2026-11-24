@@ -4,11 +4,17 @@ A local-first build of the studio portfolio. Six residential, hospitality and re
 
 ## Open the website
 
-**Visual preview** — Open the standalone HTML supplied alongside the project in a browser. It contains the gallery images and animations and works offline. Gallery likes are stored on the device. The consultation form in this edition downloads a draft. The full service below accepts and stores enquiries.
+**Visual preview** — Open the standalone HTML supplied alongside the project in a browser. It contains the gallery images and animations and works offline. Gallery likes are stored on the device. Both preview forms prepare an email addressed to the studio. The visitor reviews the details and presses Send in their mail app. The full local service saves submissions in the private dashboard.
 
 **Full local website on Mac** — Extract the complete project folder. Double-click `Start-Studio.command` on a Mac with Node 22.13 or newer installed. This opens the website in your browser and stores local enquiries under `.local/`. The package includes the production build, so npm installation is unnecessary for this mode. Close the opened terminal to stop the server. If port 4817 is occupied, run `PORT=4818 npm start` from the folder. For Windows/Linux use `npm start` and open the address it prints.
 
 **Editable development build** — Use Node 22.13 or newer. Run `npm ci`, then `npm run dev`. Use `npm run check`, `npm test` and `npm run build` for validation.
+
+## Partners, locations and contacts
+
+The Partners section groups credited projects by practice and by residential or commercial work. In **Website content → Partners and project credits**, add the approved partner name and introduction. Under **Project galleries**, choose the category and check the partners for each gallery. Until credits are supplied, the preview labels the existing galleries as concepts. Partner enquiries stay private and do not create public profiles automatically.
+
+The contact area lists Bangalore and Hyderabad. Bangalore uses the Rajajinagar studio address. Hyderabad opens a city-level map until its studio address is entered. Both locations and the social profile URLs can be edited in **Business details and tracking**. The public email and Bangalore address come from the studio contact page at https://discreteartstudios.in/contact. The Instagram and Facebook URLs are taken from the studio footer at https://www.diastudios.in/.
 
 ## The owner dashboard
 

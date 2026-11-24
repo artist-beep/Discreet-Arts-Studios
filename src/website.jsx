@@ -1,3 +1,9 @@
+import {
+  Partners,
+  LocationList,
+  SocialLinks,
+  ContactSection,
+} from "./partners.jsx";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
@@ -141,33 +147,24 @@ function Hero({ c, consult, section }) {
           <Wordmark />
         </a>
         <nav aria-label="Main navigation">
-          <a
-            href="#work"
-            onClick={(e) => {
-              e.preventDefault();
-              jump("work");
-            }}
-          >
-            Selected work
-          </a>
-          <a
-            href="#studio"
-            onClick={(e) => {
-              e.preventDefault();
-              jump("studio");
-            }}
-          >
-            The studio
-          </a>
-          <a
-            href="#films"
-            onClick={(e) => {
-              e.preventDefault();
-              jump("films");
-            }}
-          >
-            Client films
-          </a>
+          {[
+            ["work", "Selected work"],
+            ["partners", "Partners"],
+            ["studio", "The studio"],
+            ["films", "Client films"],
+            ["contact", "Contact"],
+          ].map(([id, label]) => (
+            <a
+              key={id}
+              href={"#" + id}
+              onClick={(e) => {
+                e.preventDefault();
+                jump(id);
+              }}
+            >
+              {label}
+            </a>
+          ))}
         </nav>
         <button className="outline-light enquire" onClick={consult}>
           Enquire
@@ -184,8 +181,10 @@ function Hero({ c, consult, section }) {
           <div className="mobile-nav">
             {[
               ["work", "Selected work"],
+              ["partners", "Partners"],
               ["studio", "The studio"],
               ["films", "Client films"],
+              ["contact", "Contact"],
             ].map(([k, v]) => (
               <button key={k} onClick={() => jump(k)}>
                 {v}
@@ -456,14 +455,14 @@ function Legal({ page, c, consult, preferences }) {
           Contact <em>us.</em>
         </h2>
         <h3>{company}</h3>
+        <LocationList c={c} />
+        <SocialLinks c={c} />
         {c.address ? (
           <p>
             {c.address}
             {c.city ? " · " + c.city : ""}
           </p>
-        ) : (
-          <p>Registered address awaiting confirmation.</p>
-        )}
+        ) : null}
         {c.email && (
           <p>
             <a href={"mailto:" + c.email}>{c.email}</a>
@@ -487,10 +486,10 @@ function Legal({ page, c, consult, preferences }) {
         </h2>
         <h3>Your enquiry</h3>
         <p>
-          Discrete Art Studio LLP uses the contact details, property size and
-          scope you provide to respond to your enquiry and discuss your project.
-          The website stores these details in the studio’s private enquiry
-          dashboard.
+          Discrete Art Studio LLP uses the contact details, city, project or
+          partnership information, property size and scope you provide to
+          respond to your enquiry and discuss your project. The website stores
+          these details in the studio’s private enquiry dashboard.
         </p>
         <h3>Grid CRM</h3>
         <p>
@@ -556,6 +555,7 @@ export function Website() {
   const [c, setC] = useState(initialContent),
     [path, setPath] = useState(route),
     [overlay, setOverlay] = useState(""),
+    [enquiryKind, setEnquiryKind] = useState("project"),
     [notice, setNotice] = useState(""),
     [film, setFilm] = useState(null),
     [shareInfo, setShareInfo] = useState(null),
@@ -693,6 +693,14 @@ export function Website() {
       </a>
       <Hero c={c} consult={consult} section={section} />
       <main>
+        <Partners
+          content={c}
+          open={(p) => go("/project/" + p.id)}
+          enquire={() => {
+            setEnquiryKind("partner");
+            section("contact");
+          }}
+        />
         <section id="work" className="work page-pad">
           <div className="section-top">
             <div>
@@ -722,7 +730,7 @@ export function Website() {
         <Studio c={c} consult={consult} />
         {c.films.length > 0 && <Films c={c} open={setFilm} />}
         <Brands />
-        <Invitation alt consult={consult} />
+        <ContactSection c={c} kind={enquiryKind} setKind={setEnquiryKind} />
       </main>
       <footer>
         <a
@@ -740,6 +748,7 @@ export function Website() {
           <button onClick={() => go("/terms")}>Terms of service</button>
           <button onClick={prefs}>Tracking choices</button>
         </div>
+        <SocialLinks c={c} />
         <small>
           © {new Date().getFullYear()} {company}
         </small>
@@ -771,6 +780,15 @@ export function Website() {
               </div>
               <h2>{selected.name}</h2>
               <p>{selected.description}</p>
+              {selected.partnerIds?.length > 0 && (
+                <p className="project-credit">
+                  Project partners ·{" "}
+                  {c.partners
+                    .filter((p) => selected.partnerIds.includes(p.id))
+                    .map((p) => p.name)
+                    .join(", ")}
+                </p>
+              )}
               <small>{selected.images.length} images</small>
             </div>
             {selected.images.map((im, i) => (
@@ -838,7 +856,9 @@ export function Website() {
           </div>
         </Dialog>
       )}
-      {overlay === "consult" && <Consult onClose={() => setOverlay("")} />}
+      {overlay === "consult" && (
+        <Consult email={c.email} onClose={() => setOverlay("")} />
+      )}
       {["WhatsApp", "Call"].includes(overlay) && (
         <Dialog label={overlay} onClose={() => setOverlay("")}>
           <div className="kicker">

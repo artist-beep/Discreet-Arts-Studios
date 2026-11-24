@@ -1,4 +1,11 @@
-import { bedrooms, scopes } from "../src/content.js";
+import {
+  bedrooms,
+  scopes,
+  cities,
+  sectors,
+  partnerFocus,
+  withPortfolioDefaults,
+} from "../src/content.js";
 export const emailOk = (value) =>
   typeof value === "string" &&
   value.length <= 254 &&
@@ -45,8 +52,51 @@ export function parseLead(body) {
     !phone || phoneOk(phone),
     "Include the country code, for example +91.",
   );
-  requireThat(bedrooms.includes(body.bhk), "Choose the property size.");
-  requireThat(scopes.includes(body.scope_of_work), "Choose the scope of work.");
+  const isPartner = body.enquiry_type === "partner";
+  requireThat(
+    !body.enquiry_type || ["project", "partner"].includes(body.enquiry_type),
+    "Choose an enquiry type.",
+  );
+  const location = field(body.location ?? "", 100, "the city");
+  requireThat(
+    !location || cities.includes(location) || location === "Other",
+    "Choose a city.",
+  );
+  const message = field(body.message ?? "", 2000, "the project details");
+  let partnerFields;
+  if (isPartner) {
+    const organisation = field(
+      body.organisation,
+      200,
+      "the partner or studio name",
+      true,
+    );
+    requireThat(
+      partnerFocus.includes(body.work_focus),
+      "Choose a work category.",
+    );
+    const portfolio_url = field(
+      body.portfolio_url ?? "",
+      2048,
+      "the portfolio URL",
+    );
+    if (portfolio_url)
+      requireThat(
+        secureUrl(portfolio_url),
+        "Enter a complete HTTPS portfolio link.",
+      );
+    partnerFields = {
+      organisation,
+      work_focus: body.work_focus,
+      portfolio_url,
+    };
+  } else {
+    requireThat(bedrooms.includes(body.bhk), "Choose the property size.");
+    requireThat(
+      scopes.includes(body.scope_of_work),
+      "Choose the scope of work.",
+    );
+  }
   const inputUrl = field(body.page_url ?? "", 2048, "the page URL");
   let page_url = "";
   if (inputUrl) {
@@ -71,13 +121,26 @@ export function parseLead(body) {
     name,
     email,
     phone,
-    bhk: body.bhk,
-    scope_of_work: body.scope_of_work,
-    form_name: "Studio consultation",
+    ...(isPartner
+      ? partnerFields
+      : { bhk: body.bhk, scope_of_work: body.scope_of_work }),
+    form_name: isPartner ? "Partnership enquiry" : "Studio consultation",
     page_url,
     utm,
     version: 1,
+    ...(location ? { location } : {}),
+    ...(message ? { message } : {}),
   };
+}
+function secureUrl(value) {
+  try {
+    const u = new URL(value);
+    return u.protocol === "https:" && u.hostname && !u.username && !u.password
+      ? u
+      : null;
+  } catch {
+    return null;
+  }
 }
 const safeMedia = (value) =>
   typeof value === "string" &&
@@ -94,6 +157,12 @@ const safeMedia = (value) =>
       })()));
 export function validateContent(c, previous) {
   requireThat(c && typeof c === "object", "Invalid content.");
+  requireThat(
+    Array.isArray(c.projects) &&
+      c.projects.every((p) => p && typeof p === "object"),
+    "Check the project galleries.",
+  );
+  c = withPortfolioDefaults(c);
   const output = {};
   for (const [k, n] of Object.entries({
     headline: 110,
@@ -104,6 +173,10 @@ export function validateContent(c, previous) {
     phone: 40,
     whatsapp: 40,
     pixel: 24,
+    bangaloreAddress: 400,
+    hyderabadAddress: 400,
+    instagram: 2048,
+    facebook: 2048,
   }))
     output[k] = field(c[k] ?? "", n, k, ["headline", "subtitle"].includes(k));
   requireThat(
@@ -139,24 +212,65 @@ export function validateContent(c, previous) {
     );
     return v;
   }
+  for (const network of ["facebook", "instagram"]) {
+    if (output[network]) {
+      const u = secureUrl(output[network]);
+      requireThat(
+        u &&
+          [
+            network + ".com",
+            "www." + network + ".com",
+            "m." + network + ".com",
+          ].includes(u.hostname) &&
+          u.pathname.length > 1,
+        "Use the official " + network + " profile URL.",
+      );
+    }
+  }
+  output.partners = list(c.partners, 0, 60).map((p) => ({
+    id: slug(p.id),
+    name: field(p.name, 140, "partner name", true),
+    role: field(p.role ?? "", 120, "partner role"),
+    bio: field(p.bio ?? "", 700, "partner introduction"),
+  }));
+  const partnerIds = new Set(output.partners.map((p) => p.id));
+  requireThat(
+    partnerIds.size === output.partners.length,
+    "Each partner needs a unique ID.",
+  );
   output.hero = list(c.hero, 1, 12).map((s) => ({
     image: image(s.image),
     label: field(s.label, 100, "slide label", true),
   }));
   output.studioImage = image(c.studioImage);
-  output.projects = list(c.projects, 1, 60).map((p) => ({
-    id: slug(p.id),
-    name: field(p.name, 100, "project name", true),
-    type: field(p.type, 100, "project type", true),
-    description: field(p.description, 800, "project description"),
-    aspect: ["4/5", "5/4", "3/4", "4/3", "1/1"].includes(p.aspect)
-      ? p.aspect
-      : "4/5",
-    images: list(p.images, 1, 30).map((i) => ({
-      url: image(i.url),
-      alt: field(i.alt, 240, "image description", true),
-    })),
-  }));
+  output.projects = list(c.projects, 1, 60).map((p) => {
+    requireThat(
+      sectors.includes(p.sector),
+      "Select residential or commercial.",
+    );
+    return {
+      id: slug(p.id),
+      name: field(p.name, 100, "project name", true),
+      type: field(p.type, 100, "project type", true),
+      sector: p.sector,
+      partnerIds: [
+        ...new Set(
+          list(p.partnerIds, 0, 60).map((id) => {
+            requireThat(partnerIds.has(id), "Select an existing partner.");
+            return id;
+          }),
+        ),
+      ],
+      description: field(p.description, 800, "project description"),
+      aspect: ["4/5", "5/4", "3/4", "4/3", "1/1"].includes(p.aspect)
+        ? p.aspect
+        : "4/5",
+      images: list(p.images, 1, 30).map((i) => ({
+        url: image(i.url),
+        alt: field(i.alt, 240, "image description", true),
+      })),
+    };
+  });
   output.films = list(c.films, 0, 20).map((f) => ({
     id: slug(f.id),
     title: field(f.title, 120, "film title", true),

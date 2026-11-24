@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Sun, Moon, LogOut, Download, Plus, Trash2 } from "lucide-react";
+import { sectors } from "./content.js";
 import { api, getPrefs, setPrefs } from "./client.js";
 function Field({ label, value, change, area = false, ...props }) {
   return (
@@ -69,6 +70,16 @@ function Editor({ onNotice }) {
       {label}
     </button>
   );
+  function removePartner(id) {
+    setData((prev) => ({
+      ...prev,
+      partners: prev.partners.filter((p) => p.id !== id),
+      projects: prev.projects.map((p) => ({
+        ...p,
+        partnerIds: p.partnerIds.filter((key) => key !== id),
+      })),
+    }));
+  }
   async function save(e) {
     e.preventDefault();
     setBusy(true);
@@ -111,12 +122,75 @@ function Editor({ onNotice }) {
         )}
       </details>
       <details>
+        <summary>Partners and project credits</summary>
+        {data.partners.map((partner, i) => (
+          <fieldset key={partner.id}>
+            <legend>{partner.name || "New partner"}</legend>
+            {input(
+              "Partner or practice name",
+              ["partners", i, "name"],
+              partner.name,
+            )}
+            {input("Role or specialty", ["partners", i, "role"], partner.role)}
+            {input("Introduction", ["partners", i, "bio"], partner.bio, true)}
+            {minus(
+              () => removePartner(partner.id),
+              "Remove partner and associated credits",
+            )}
+          </fieldset>
+        ))}
+        {more(
+          () =>
+            add(["partners"], data.partners, {
+              id: "partner-" + crypto.randomUUID().slice(0, 8),
+              name: "",
+              role: "",
+              bio: "",
+            }),
+          "Add partner",
+        )}
+        <p>Assign partners to their projects under Project galleries.</p>
+      </details>
+      <details>
         <summary>Project galleries</summary>
         {data.projects.map((p, i) => (
           <details key={i}>
             <summary>{p.name || "New project"}</summary>
             {input("Gallery ID", ["projects", i, "id"], p.id)}
             {input("Project name", ["projects", i, "name"], p.name)}
+            <label>
+              Portfolio category
+              <select
+                value={p.sector}
+                onChange={(e) => set(["projects", i, "sector"], e.target.value)}
+              >
+                {sectors.map((v) => (
+                  <option key={v}>{v}</option>
+                ))}
+              </select>
+            </label>
+            {data.partners.length > 0 && (
+              <fieldset>
+                <legend>Credited partners</legend>
+                {data.partners.map((person) => (
+                  <label key={person.id} className="inline-check">
+                    <input
+                      type="checkbox"
+                      checked={p.partnerIds.includes(person.id)}
+                      onChange={(e) =>
+                        set(
+                          ["projects", i, "partnerIds"],
+                          e.target.checked
+                            ? [...p.partnerIds, person.id]
+                            : p.partnerIds.filter((key) => key !== person.id),
+                        )
+                      }
+                    />
+                    {person.name || "New partner"}
+                  </label>
+                ))}
+              </fieldset>
+            )}
             {input("Project type", ["projects", i, "type"], p.type)}
             {input(
               "Description",
@@ -162,6 +236,8 @@ function Editor({ onNotice }) {
               id: "gallery-" + crypto.randomUUID().slice(0, 8),
               name: "New gallery",
               type: "Residential",
+              sector: "Residential",
+              partnerIds: [],
               aspect: "4/5",
               description: "",
               images: [{ url: "", alt: "" }],
@@ -209,6 +285,10 @@ function Editor({ onNotice }) {
         {[
           ["Headquarters city", "city"],
           ["Registered address", "address"],
+          ["Bangalore studio address", "bangaloreAddress"],
+          ["Hyderabad studio address", "hyderabadAddress"],
+          ["Instagram profile URL", "instagram"],
+          ["Facebook page URL", "facebook"],
           ["Public email", "email"],
           ["Call number, including country code", "phone"],
           ["WhatsApp number, including country code", "whatsapp"],
@@ -236,7 +316,7 @@ function Leads({ onNotice }) {
     (r) =>
       (filter === "All" ||
         (filter === "Suspected spam" ? r.suspected_spam : !r.suspected_spam)) &&
-      [r.name, r.email, r.phone]
+      [r.name, r.email, r.phone, r.location, r.organisation, r.form_name]
         .join(" ")
         .toLowerCase()
         .includes(q.toLowerCase()),
@@ -292,8 +372,8 @@ function Leads({ onNotice }) {
                 {[
                   "Received",
                   "Contact",
-                  "Property",
-                  "Scope",
+                  "Enquiry",
+                  "Details",
                   "Classification",
                   "Status",
                 ].map((h) => (
@@ -312,8 +392,25 @@ function Leads({ onNotice }) {
                     <br />
                     {r.phone}
                   </td>
-                  <td>{r.bhk}</td>
-                  <td>{r.scope_of_work}</td>
+                  <td>
+                    {r.form_name}
+                    <br />
+                    {r.location}
+                  </td>
+                  <td>
+                    {[
+                      r.bhk,
+                      r.scope_of_work,
+                      r.organisation,
+                      r.work_focus,
+                      r.portfolio_url,
+                      r.message,
+                    ]
+                      .filter(Boolean)
+                      .map((v, i) => (
+                        <p key={i}>{v}</p>
+                      ))}
+                  </td>
                   <td>{r.delivery}</td>
                   <td>
                     <select

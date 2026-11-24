@@ -5,6 +5,8 @@ type Project = {
   name: string;
   type: string;
   aspect: string;
+  sector: string;
+  partnerIds: string[];
   description: string;
   images: { url: string; alt: string }[];
 };
@@ -21,6 +23,11 @@ type Content = {
   subtitle: string;
   hero: { image: string; label: string }[];
   projects: Project[];
+  partners: { id: string; name: string; role: string; bio: string }[];
+  facebook: string;
+  instagram: string;
+  bangaloreAddress: string;
+  hyderabadAddress: string;
   films: Film[];
   studioImage: string;
   city: string;

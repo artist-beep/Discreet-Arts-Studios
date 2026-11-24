@@ -14,8 +14,10 @@ export const digest = (value) =>
   createHash("sha256").update(value).digest("hex");
 const mac = (secret, data) =>
   createHmac("sha256", secret).update(data).digest("base64url");
-export function signStamp(secret, now) {
-  const message = [now, FORM, token()].join(".");
+const formIdentity = (kind) =>
+  kind === "partner" ? "studio-partner-v1" : FORM;
+export function signStamp(secret, now, kind = "project") {
+  const message = [now, formIdentity(kind), token()].join(".");
   return message + "." + mac(secret, message);
 }
 export function isSuspectedFormTiming(stampVerified, issuedAtMs, receivedAtMs) {
@@ -28,12 +30,12 @@ export function isSuspectedFormTiming(stampVerified, issuedAtMs, receivedAtMs) {
     receivedAtMs - issuedAtMs < MIN_FORM_DISPLAY_MS
   );
 }
-export function suspected(secret, stamp, now) {
+export function suspected(secret, stamp, now, kind = "project") {
   const [time, form, nonce, signature, ...extra] =
     typeof stamp === "string" && stamp.length <= 256 ? stamp.split(".") : [];
   const expected = mac(secret, [time, form, nonce].join("."));
   const verified =
-    form === FORM &&
+    form === formIdentity(kind) &&
     /^\d{1,16}$/.test(time) &&
     /^[\w-]{43}$/.test(nonce) &&
     /^[\w-]{43}$/.test(signature) &&

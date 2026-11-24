@@ -1,4 +1,11 @@
 export const company = "Discrete Art Studio LLP";
+export const cities = ["Bangalore", "Hyderabad"];
+export const sectors = ["Residential", "Commercial"];
+export const partnerFocus = [...sectors, "Residential and commercial"];
+export const studioLocations = {
+  Bangalore: "Karnataka",
+  Hyderabad: "Telangana",
+};
 export const initialContent = {
   headline: "The art of\nliving well.",
   subtitle:
@@ -8,11 +15,14 @@ export const initialContent = {
     { image: "/media/dining.webp", label: "The Walnut Dining Room" },
     { image: "/media/cafe.webp", label: "The Terracotta Café" },
   ],
+  partners: [],
   projects: [
     {
       id: "courtyard-house",
       name: "Courtyard House",
       type: "Residential concept",
+      sector: "Residential",
+      partnerIds: [],
       aspect: "4/5",
       description:
         "An arched threshold opens a timber-lined living room to the garden. A curved, low sofa follows the line of the courtyard.",
@@ -31,6 +41,8 @@ export const initialContent = {
       id: "terracotta-cafe",
       name: "The Terracotta Café",
       type: "Hospitality concept",
+      sector: "Commercial",
+      partnerIds: [],
       aspect: "5/4",
       description:
         "Burnt sienna walls and warm light set the mood for a sequence of intimate tables.",
@@ -47,6 +59,8 @@ export const initialContent = {
       id: "oak-kitchen",
       name: "Oak & Travertine",
       type: "Kitchen concept",
+      sector: "Residential",
+      partnerIds: [],
       aspect: "5/4",
       description:
         "A quiet kitchen palette built around the grain of oak and the texture of pale stone.",
@@ -65,6 +79,8 @@ export const initialContent = {
       id: "olive-room",
       name: "The Olive Room",
       type: "Bedroom concept",
+      sector: "Residential",
+      partnerIds: [],
       aspect: "4/5",
       description:
         "Olive linen and a layered neutral palette bring softness to a restful bedroom.",
@@ -80,6 +96,8 @@ export const initialContent = {
       id: "limestone-atelier",
       name: "The Limestone Atelier",
       type: "Retail concept",
+      sector: "Commercial",
+      partnerIds: [],
       aspect: "5/4",
       description:
         "Arched display niches and pale limestone set a measured rhythm through a boutique interior.",
@@ -98,6 +116,8 @@ export const initialContent = {
       id: "walnut-table",
       name: "The Walnut Dining Room",
       type: "Dining concept",
+      sector: "Residential",
+      partnerIds: [],
       aspect: "4/5",
       description:
         "A walnut table, cane seats and a paper pendant define a room for unhurried meals.",
@@ -134,7 +154,13 @@ export const initialContent = {
   studioImage: "/media/studio.webp",
   city: "",
   address: "",
-  email: "",
+  bangaloreAddress:
+    "130K, 19th A Main, 1st K Block, Rajajinagar, Bangalore 560010",
+  hyderabadAddress: "",
+  instagram: "https://www.instagram.com/discreteartstudio/",
+  facebook:
+    "https://www.facebook.com/people/Discrete-Art-Studio/61574644563327/",
+  email: "info@discretearts.com",
   phone: "",
   whatsapp: "",
   pixel: "",
@@ -152,3 +178,18 @@ export const bedrooms = [
   "4 BHK+",
   "Commercial space",
 ];
+
+// Keep previously saved CMS content usable without changing the owner's edits.
+export function withPortfolioDefaults(saved) {
+  const content = { ...initialContent, ...saved };
+  return {
+    ...content,
+    projects: content.projects.map((p) => ({
+      sector: /commercial|retail|hospitality|office/i.test(p.type)
+        ? "Commercial"
+        : "Residential",
+      partnerIds: [],
+      ...p,
+    })),
+  };
+}
