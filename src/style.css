@@ -179,7 +179,6 @@ em {
   width: var(--logo-size);
   height: var(--logo-size);
   overflow: hidden;
-  background: #fff;
 }
 /* Frame the artwork within the transparent margins of the supplied 500px PNG. */
 .studio-logo img {
@@ -189,6 +188,23 @@ em {
   height: auto;
   left: -30.94%;
   top: -20.78%;
+}
+/* The centre of the original PNG contains the emblem, between the two rows of lettering. */
+.studio-logo.white-lettering {
+  --emblem-top: 25%;
+  --emblem-bottom: 65%;
+}
+.white-lettering img:first-child {
+  clip-path: inset(var(--emblem-top) 0 calc(100% - var(--emblem-bottom)));
+}
+.white-lettering .logo-letters {
+  filter: brightness(0) invert(1);
+  mask-image: linear-gradient(
+    to bottom,
+    black 0 var(--emblem-top),
+    transparent var(--emblem-top) var(--emblem-bottom),
+    black var(--emblem-bottom) 100%
+  );
 }
 footer .studio-logo {
   --logo-size: 86px;

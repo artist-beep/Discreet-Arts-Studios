@@ -641,7 +641,7 @@ export function Website() {
             section("home");
           }}
         >
-          <StudioLogo />
+          <StudioLogo whiteLettering />
         </a>
         <div>
           <button onClick={() => go("/contact")}>Contact us</button>
