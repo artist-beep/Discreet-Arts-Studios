@@ -7,8 +7,6 @@ export default {
       const response = new Response(r.body, r);
       response.headers.set("Referrer-Policy", "no-referrer");
       response.headers.set("X-Content-Type-Options", "nosniff");
-      if (url.pathname.startsWith("/admin"))
-        response.headers.set("Cache-Control", "no-store");
       return response;
     }
     if (!env.DB || !env.FORM_TIMING_SECRET)

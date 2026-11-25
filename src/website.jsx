@@ -22,6 +22,7 @@ import {
   Play,
 } from "lucide-react";
 import { initialContent, company, sectors } from "./content.js";
+import { fetchSanityContent } from "./sanity.js";
 import {
   api,
   asset,
@@ -53,7 +54,7 @@ function animateIn(el) {
   }
   el.animate?.(frames, { duration: 420, easing: "ease-out" });
 }
-if (!portable && !location.pathname.startsWith("/admin")) {
+if (!portable) {
   const source =
     "https://cdn.jsdelivr.net/npm/framer-motion@12.23.24/dom/mini/+esm";
   import(/* @vite-ignore */ source)
@@ -620,9 +621,22 @@ export function Website() {
     window.addEventListener("popstate", r);
     if (!portable) {
       api("content")
-        .then((data) => {
-          setC(data);
-          enablePixel(data.pixel);
+        .then(async (data) => {
+          let merged = data;
+          try {
+            const sanityData = await fetchSanityContent();
+            if (sanityData?.projects?.length > 0) {
+              merged = {
+                ...data,
+                projects: sanityData.projects,
+                ...(sanityData.partners?.length > 0
+                  ? { partners: sanityData.partners }
+                  : {}),
+              };
+            }
+          } catch {}
+          setC(merged);
+          enablePixel(merged.pixel);
         })
         .catch(() => {})
         .finally(() => setContentReady(true));

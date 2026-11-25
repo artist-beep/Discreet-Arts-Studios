@@ -3,21 +3,14 @@ import { initialContent, withPortfolioDefaults } from "../src/content.js";
 import {
   parseLead,
   uuidOk,
-  validateContent,
   Problem,
   requireThat,
 } from "./validation.mjs";
 import {
-  cookie,
   digest,
-  token,
-  hashPassword,
-  verifyPassword,
   rateLimit,
-  signedIn,
   signStamp,
   suspected,
-  ticketValid,
 } from "./security.mjs";
 const headers = {
   "Cache-Control": "no-store",
@@ -73,23 +66,6 @@ export async function currentContent(db) {
       }
     : { content: structuredClone(initialContent), revision: 0 };
 }
-function csvValue(value) {
-  const t = String(value ?? "");
-  return (
-    '"' + (/^[\s]*[=+@-]/.test(t) ? "'" : "") + t.replaceAll('"', '""') + '"'
-  );
-}
-function leadView(row) {
-  const p = JSON.parse(row.payload);
-  return {
-    ...p,
-    created_at: row.created_at,
-    status: row.status,
-    suspected_spam: !!row.suspected_spam,
-    delivery: row.suspected_spam ? "Suspected spam" : "Stored on site",
-  };
-}
-const leadQuery = "SELECT * FROM leads ORDER BY created_at DESC, submission_id";
 export async function handle(request, { db, secret, clock = Date.now }) {
   const now = clock(),
     url = new URL(request.url),
@@ -195,170 +171,6 @@ export async function handle(request, { db, secret, clock = Date.now }) {
         },
         201,
       );
-    }
-    if (!path.startsWith("/api/admin/"))
-      return json({ error: "Not found." }, 404);
-    const owner = await db.first("SELECT * FROM owner WHERE id=1");
-    if (path === "/api/admin/state" && method === "GET")
-      return json({
-        setup: !owner?.password_hash,
-        authenticated: await signedIn(db, request, now),
-      });
-    if (
-      (path === "/api/admin/ticket" || path === "/api/admin/activate") &&
-      method === "POST"
-    ) {
-      await rate("ticket", 16, 600000);
-      const b = await read(request, 2048);
-      requireThat(
-        ticketValid(owner, b.token, now),
-        "The private link is invalid, expired or already used.",
-        403,
-      );
-      if (path.endsWith("/ticket"))
-        return json({ valid: true, kind: owner.ticket_type });
-      const hash = await hashPassword(b.password);
-      const r = await db.run(
-        "UPDATE owner SET password_hash=?,credential_version=credential_version+1,ticket_digest=NULL,ticket_type=NULL,ticket_expires=NULL WHERE id=1 AND ticket_digest=? AND ticket_expires>? AND credential_version=?",
-        hash,
-        digest(b.token),
-        clock(),
-        owner.credential_version,
-      );
-      requireThat(
-        r.changes === 1,
-        "This link has expired or has already been used.",
-        403,
-      );
-      return json({ ok: true });
-    }
-    if (path === "/api/admin/login" && method === "POST") {
-      await rate("login", 10, 600000);
-      const b = await read(request, 2048);
-      requireThat(
-        owner?.password_hash &&
-          owner.email === String(b.email).toLowerCase().trim() &&
-          (await verifyPassword(b.password, owner.password_hash)),
-        "Check your sign-in details.",
-        401,
-      );
-      const session = token();
-      await db.run(
-        "INSERT INTO sessions(digest,version,expires) VALUES(?,?,?)",
-        digest(session),
-        owner.credential_version,
-        now + 8 * 3600000,
-      );
-      await db.run("DELETE FROM sessions WHERE expires<=?", now);
-      return json({ ok: true }, 200, { "Set-Cookie": cookie(session, 28800) });
-    }
-    requireThat(
-      await signedIn(db, request, now),
-      "Sign in to the studio dashboard.",
-      401,
-    );
-    if (path === "/api/admin/logout" && method === "POST") {
-      const s = request.headers
-        .get("Cookie")
-        ?.match(/__Host-studio=([\w-]{43})/)?.[1];
-      if (s) await db.run("DELETE FROM sessions WHERE digest=?", digest(s));
-      return json({ ok: true }, 200, { "Set-Cookie": cookie("", 0) });
-    }
-    if (path === "/api/admin/password" && method === "POST") {
-      await rate("change", 10, 600000);
-      const b = await read(request, 2048);
-      requireThat(
-        await verifyPassword(b.current, owner.password_hash),
-        "Check the current password.",
-        403,
-      );
-      const hash = await hashPassword(b.password);
-      const r = await db.run(
-        "UPDATE owner SET password_hash=?,credential_version=credential_version+1,ticket_digest=NULL,ticket_type=NULL,ticket_expires=NULL WHERE id=1 AND credential_version=?",
-        hash,
-        owner.credential_version,
-      );
-      requireThat(r.changes === 1, "Please sign in again.", 409);
-      return json({ ok: true }, 200, { "Set-Cookie": cookie("", 0) });
-    }
-    if (path === "/api/admin/leads" && method === "GET")
-      return json((await db.all(leadQuery)).map(leadView));
-    if (path === "/api/admin/status" && method === "POST") {
-      const b = await read(request, 1024);
-      requireThat(
-        ["New", "Contacted", "Closed", "Test"].includes(b.status) &&
-          uuidOk(b.id),
-        "Invalid lead update.",
-      );
-      const r = await db.run(
-        "UPDATE leads SET status=? WHERE submission_id=?",
-        b.status,
-        b.id,
-      );
-      requireThat(r.changes === 1, "Enquiry not found.", 404);
-      return json({ ok: true });
-    }
-    if (path === "/api/admin/export" && method === "GET") {
-      const cols = [
-        "created_at",
-        "submission_id",
-        "name",
-        "email",
-        "phone",
-        "bhk",
-        "scope_of_work",
-        "status",
-        "delivery",
-        "form_name",
-        "location",
-        "message",
-        "organisation",
-        "work_focus",
-        "portfolio_url",
-      ];
-      const rows = (await db.all(leadQuery)).map(leadView);
-      return new Response(
-        "\uFEFF" +
-          [
-            cols.join(","),
-            ...rows.map((r) => cols.map((k) => csvValue(r[k])).join(",")),
-          ].join("\r\n"),
-        {
-          headers: {
-            ...headers,
-            "Content-Type": "text/csv; charset=utf-8",
-            "Content-Disposition":
-              'attachment; filename="studio-enquiries.csv"',
-          },
-        },
-      );
-    }
-    if (path === "/api/admin/content" && method === "GET")
-      return json(await currentContent(db));
-    if (path === "/api/admin/content" && method === "POST") {
-      const b = await read(request, 400000),
-        c = validateContent(b.content);
-      requireThat(
-        Number.isSafeInteger(b.revision) && b.revision >= 0,
-        "Reload before saving.",
-      );
-      const r =
-        b.revision === 0
-          ? await db.run(
-              "INSERT OR IGNORE INTO content(id,body,revision) VALUES(1,?,1)",
-              JSON.stringify(c),
-            )
-          : await db.run(
-              "UPDATE content SET body=?,revision=revision+1 WHERE id=1 AND revision=?",
-              JSON.stringify(c),
-              b.revision,
-            );
-      requireThat(
-        r.changes === 1,
-        "Content changed in another session. Reload before saving.",
-        409,
-      );
-      return json({ revision: b.revision + 1 });
     }
     return json({ error: "Not found." }, 404);
   } catch (e) {

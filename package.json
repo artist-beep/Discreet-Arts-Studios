@@ -12,8 +12,6 @@
     "build": "vite build",
     "test": "node --test tests/*.test.mjs",
     "check": "tsc --noEmit && eslint src server tests",
-    "admin:setup": "node server/owner.mjs setup",
-    "admin:recovery": "node server/owner.mjs recovery",
     "preview:html": "npm run build && vite build --ssr src/preview-shell.jsx --outDir .preview-work && node server/export-preview.mjs"
   },
   "dependencies": {
@@ -22,11 +20,11 @@
     "react-dom": "19.2.6"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "4.3.0",
+    "@tailwindcss/vite": "4.3.5",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "eslint": "9.39.4",
-    "tailwindcss": "4.3.0",
+    "tailwindcss": "4.3.5",
     "typescript": "5.9.3",
     "vite": "8.1.0"
   }

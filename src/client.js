@@ -73,8 +73,7 @@ export function enablePixel(id) {
     portable ||
     !/^\d{5,24}$/.test(id) ||
     consent() !== "yes" ||
-    !cleanContext() ||
-    location.pathname.startsWith("/admin")
+    !cleanContext()
   )
     return;
   if (loaded) return;
